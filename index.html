@@ -1,0 +1,1275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>One Bellwood Companion</title>
+<meta name="description" content="Interactive companion to Team Lorazepam's Project Silver recommendation for Bellwood Health System (Deloitte Capstone 2026).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a board binder. Identity band, sticky tab rail, then one working tool per tab:
+   controls on the left, evidence on the right; everything stacks to one column on phones. */
+:root{
+  --bg:#F2F5F6; --surface:#FFFFFF; --surface-2:#E7EDEF; --ink:#14212A; --ink-2:#44555F; --ink-3:#6E7F89; --rule:#D1DADE;
+  --accent:#8A561B; --accent-ink:#FFFFFF; --accent-soft:#F3E6D4;
+  --data:#1D5970; --data-2:#6A97AA; --data-soft:#D8E7ED;
+  --cost:#A33E36; --cost-soft:#F5DEDB;
+  --good:#22704A; --good-soft:#DAEEE2; --warn:#8F5C08; --warn-soft:#F5E8CC; --bad:#A6352B; --bad-soft:#F6DBD7;
+  --lock:#5B6A72; --lock-soft:#E5EAEC;
+  --f-display:"Archivo","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:10px; --r-sm:6px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E161B; --surface:#152129; --surface-2:#1C2B34; --ink:#E5ECEF; --ink-2:#A8B7BF; --ink-3:#7E8F98; --rule:#2A3B45;
+    --accent:#D9A35E; --accent-ink:#1B1207; --accent-soft:#3A2B18;
+    --data:#71B5D0; --data-2:#4A7F94; --data-soft:#1B3946;
+    --cost:#E27B70; --cost-soft:#40211E;
+    --good:#62C189; --good-soft:#163526; --warn:#E3AA4C; --warn-soft:#3A2C12; --bad:#EA776B; --bad-soft:#40201C;
+    --lock:#93A3AB; --lock-soft:#1E2B32;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E161B; --surface:#152129; --surface-2:#1C2B34; --ink:#E5ECEF; --ink-2:#A8B7BF; --ink-3:#7E8F98; --rule:#2A3B45;
+  --accent:#D9A35E; --accent-ink:#1B1207; --accent-soft:#3A2B18;
+  --data:#71B5D0; --data-2:#4A7F94; --data-soft:#1B3946;
+  --cost:#E27B70; --cost-soft:#40211E;
+  --good:#62C189; --good-soft:#163526; --warn:#E3AA4C; --warn-soft:#3A2C12; --bad:#EA776B; --bad-soft:#40201C;
+  --lock:#93A3AB; --lock-soft:#1E2B32;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.55 var(--f-body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-0.005em;color:var(--ink)}
+h1{font-size:clamp(36px,5.2vw,58px);font-weight:800;font-stretch:78%;line-height:.98}
+h2{font-size:clamp(23px,2.6vw,30px);font-weight:750;font-stretch:84%;line-height:1.1}
+h3{font-size:17px;font-weight:700;font-stretch:90%;line-height:1.25}
+h4{font-size:14px;font-weight:700;font-stretch:92%}
+p{margin:0}
+a{color:var(--data);text-underline-offset:2px}
+a:hover{color:var(--accent)}
+b,strong{font-weight:600}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-2)}
+.small{font-size:13px}
+.tiny{font-size:12px;color:var(--ink-3)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* Tags */
+.tag{display:inline-block;font:600 10.5px/1.6 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;padding:0 6px;border-radius:4px;vertical-align:1px;white-space:nowrap}
+.tag.case{background:var(--data-soft);color:var(--data)}
+.tag.src{background:var(--good-soft);color:var(--good)}
+.tag.asm{background:var(--accent-soft);color:var(--accent)}
+.tag.demo{background:var(--lock-soft);color:var(--lock)}
+
+/* Header */
+.band{background:var(--surface);border-bottom:1px solid var(--rule)}
+.head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:28px;align-items:end;padding-block:30px 18px}
+.eyebrow{font:500 12px/1.4 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin-bottom:12px}
+.lede{margin-top:12px;max-width:66ch;color:var(--ink-2);font-size:16px}
+.legend{border:1px solid var(--rule);border-radius:var(--r);padding:12px 14px;min-width:0}
+.legend-title{font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px}
+.legend ul{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:13px}
+.guide{padding-block:4px 22px}
+.guide-title{font:600 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin-bottom:10px}
+.guide-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;counter-reset:g}
+.guide-steps li{counter-increment:g;border-top:2px solid var(--accent);padding-top:8px;font-size:13.5px;color:var(--ink-2)}
+.guide-steps li::before{content:counter(g);font:600 12px var(--f-mono);color:var(--accent);margin-right:6px}
+.guide-steps b{color:var(--ink)}
+@media (max-width:900px){.head{grid-template-columns:1fr}.guide-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.guide-steps{grid-template-columns:1fr}}
+
+/* Tabs */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--surface);border-bottom:1px solid var(--rule)}
+.tabs .wrap{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tab{appearance:none;border:0;background:none;color:var(--ink-2);font:650 15px var(--f-display);font-stretch:90%;padding:13px 14px 11px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab:hover{color:var(--ink)}
+.tab small{font:500 11px var(--f-mono);color:var(--ink-3);margin-left:6px}
+
+/* Panels */
+.panel{padding-block:26px 56px}
+.panel-head{display:grid;gap:8px;margin-bottom:18px}
+.panel-head p{max-width:76ch;color:var(--ink-2)}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:18px;min-width:0}
+.card > h3{margin-bottom:4px}
+.card > .sub{color:var(--ink-2);font-size:13.5px;margin-bottom:14px}
+.stack{display:grid;gap:16px;min-width:0}
+.note{font-size:13px;color:var(--ink-2);margin-top:10px}
+.callout{border-left:3px solid var(--warn);background:var(--warn-soft);color:var(--ink);padding:9px 12px;border-radius:0 var(--r-sm) var(--r-sm) 0;font-size:13px;margin-top:10px}
+.callout.bad{border-left-color:var(--bad);background:var(--bad-soft)}
+.callout.good{border-left-color:var(--good);background:var(--good-soft)}
+.callout.info{border-left-color:var(--data);background:var(--data-soft)}
+
+/* Buttons and forms */
+.btn{appearance:none;font:600 14px var(--f-body);padding:9px 14px;border-radius:var(--r-sm);border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer;line-height:1.2}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.small{font-size:13px;padding:6px 10px}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn.danger{border-color:var(--bad);color:var(--bad);background:transparent}
+input[type=text],input[type=tel],select,textarea{font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--rule);border-radius:var(--r-sm);background:var(--surface);color:var(--ink);width:100%;min-width:0}
+textarea{resize:vertical;min-height:64px}
+label.f{display:grid;gap:4px;font-size:13px;font-weight:500;color:var(--ink-2)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.grid2{grid-template-columns:1fr}}
+
+/* Presets */
+.presets{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.preset{appearance:none;border:1px solid var(--rule);background:var(--surface);color:var(--ink);font:600 14px var(--f-body);padding:8px 14px;border-radius:999px;cursor:pointer}
+.preset[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.preset.stress{border-color:var(--bad);color:var(--bad)}
+.preset.stress[aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:var(--surface)}
+.custom-flag{font:600 12px var(--f-mono);color:var(--accent);border:1px dashed var(--accent);padding:4px 10px;border-radius:999px}
+.preset-desc{font-size:13px;color:var(--ink-2);flex-basis:100%;max-width:90ch}
+
+/* Model grid */
+.model-grid{display:grid;grid-template-columns:minmax(280px,350px) minmax(0,1fr);gap:22px;align-items:start}
+.controls{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:16px 16px 6px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);max-height:calc(100vh - 80px);overflow:auto}
+@media (max-width:960px){.model-grid{grid-template-columns:1fr}.controls{position:static;max-height:none}}
+fieldset{border:0;padding:0;margin:0 0 16px;min-width:0}
+legend{font:700 13px var(--f-display);font-stretch:90%;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);padding:0 0 6px;width:100%;border-bottom:1px solid var(--rule);margin-bottom:10px}
+.ctl{display:grid;gap:3px;margin-bottom:14px}
+.ctl-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.ctl-top label{font-weight:500;font-size:14px}
+.ctl output{font:600 14px var(--f-mono);color:var(--data);white-space:nowrap;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);margin:2px 0}
+.hint{font-size:12px;color:var(--ink-3);line-height:1.4}
+.opts{display:grid;gap:6px}
+.opt{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--rule);border-radius:var(--r-sm);padding:7px 10px;cursor:pointer;font-size:13px}
+.opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.opt input{margin-top:3px;accent-color:var(--accent)}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;cursor:pointer}
+.check input{margin-top:4px;accent-color:var(--accent)}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:1100px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:420px){.kpis{grid-template-columns:1fr}}
+.kpi{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:14px 16px;display:grid;gap:4px;align-content:start;min-width:0}
+.kpi.lead{border-color:var(--ink);box-shadow:inset 0 3px 0 var(--accent)}
+.k-label{font:600 11.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.k-val{font:800 34px/1.05 var(--f-display);font-stretch:82%;font-variant-numeric:tabular-nums;color:var(--ink)}
+.k-sub{font-size:12.5px;color:var(--ink-2)}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:999px;font:600 11.5px/1.7 var(--f-mono);white-space:nowrap}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.info{background:var(--data-soft);color:var(--data)}
+.pill.lock{background:var(--lock-soft);color:var(--lock)}
+
+/* Waterfall */
+.wf{display:grid;gap:2px}
+.wf-scale{display:flex;justify-content:space-between;font:500 11.5px var(--f-mono);color:var(--ink-3);padding:0 86px 4px 180px}
+.wf-row{display:grid;grid-template-columns:170px minmax(0,1fr) 76px;gap:10px;align-items:center;padding:4px 0}
+.wf-label{font-size:13.5px}
+.wf-label small{display:block;color:var(--ink-3);font-size:11.5px}
+.wf-track{position:relative;height:20px;background:var(--surface-2);border-radius:3px}
+.wf-bar{position:absolute;top:0;bottom:0;border-radius:3px}
+.wf-bar.pos{background:var(--data)}
+.wf-bar.neg{background:var(--cost)}
+.wf-bar.net{background:var(--ink)}
+.wf-bar.gap{background:repeating-linear-gradient(45deg,var(--accent-soft) 0 6px,transparent 6px 12px);border:1.5px dashed var(--accent)}
+.wf-target{position:absolute;top:-4px;bottom:-4px;width:0;border-left:2px solid var(--accent)}
+.wf-val{font:600 13px var(--f-mono);text-align:right;font-variant-numeric:tabular-nums}
+.wf-row.total{border-top:1px solid var(--rule);margin-top:4px;padding-top:8px}
+@media (max-width:560px){.wf-row{grid-template-columns:minmax(0,1fr) 70px}.wf-label{grid-column:1 / -1}.wf-scale{padding:0 80px 4px 0}}
+
+/* Charts */
+.chart{width:100%;overflow:hidden}
+.chart svg{display:block}
+.g-grid{stroke:var(--rule);stroke-width:1}
+.g-tick{font:11px var(--f-mono);fill:var(--ink-3)}
+.g-axt{font:600 11px var(--f-mono);fill:var(--ink-2)}
+.g-vline{stroke:var(--ink-3);stroke-dasharray:3 4;stroke-width:1}
+.g-vlabel{font:600 10.5px var(--f-mono);fill:var(--ink-2)}
+.g-main{stroke:var(--data);stroke-width:2.5;fill:none}
+.g-alt{stroke:var(--cost);stroke-width:2.5;fill:none}
+.g-target{stroke:var(--accent);stroke-width:1.6;stroke-dasharray:7 5}
+.g-target-label{font:600 11px var(--f-mono);fill:var(--accent)}
+.g-base{stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:2 4}
+.g-base-label{font:500 11px var(--f-mono);fill:var(--ink-3)}
+.g-dot{fill:var(--data);stroke:var(--surface);stroke-width:2}
+.g-dot-alt{fill:var(--cost);stroke:var(--surface);stroke-width:2}
+.g-dot-acc{fill:var(--accent);stroke:var(--surface);stroke-width:2}
+.g-dot-grey{fill:var(--ink-3);stroke:var(--surface);stroke-width:2}
+.g-dotlabel{font:600 11.5px var(--f-mono);fill:var(--ink)}
+.g-band{fill:var(--good-soft)}
+.g-band-label{font:600 10.5px var(--f-mono);fill:var(--good)}
+.chart-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);margin-top:6px}
+.sw{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+
+/* Gates */
+.gates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+@media (max-width:760px){.gates{grid-template-columns:1fr}}
+.gate{border:1px solid var(--rule);border-radius:var(--r-sm);padding:10px 12px;display:grid;gap:6px;align-content:start}
+.gate-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.gate h4{font-size:14px}
+.gate p{font-size:12.5px;color:var(--ink-2)}
+
+/* Tables */
+.tbl-wrap{overflow-x:auto;min-width:0}
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{text-align:left;font:600 11.5px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2);border-bottom:1px solid var(--rule);padding:8px 10px;white-space:nowrap}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl td.mono{white-space:nowrap}
+.tbl tfoot td{font-weight:600;border-top:1px solid var(--ink-3)}
+
+/* Pipeline */
+.locks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.lockcard{border:1.5px dashed var(--lock);border-radius:var(--r-sm);padding:12px;background:var(--lock-soft);display:grid;gap:6px;align-content:start}
+.lockcard p{font-size:12.5px;color:var(--ink-2)}
+
+/* Arithmetic */
+details.card summary{cursor:pointer;font:700 16px var(--f-display);font-stretch:90%}
+.arith{display:grid;gap:6px;margin-top:12px;font:13px/1.55 var(--f-mono);font-variant-numeric:tabular-nums}
+.arith div{padding:6px 10px;background:var(--surface-2);border-radius:var(--r-sm);overflow-x:auto}
+.arith b{color:var(--data)}
+
+/* Front door */
+.doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:18px}
+@media (max-width:640px){.doors{grid-template-columns:1fr}}
+.door{appearance:none;text-align:left;border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:var(--r);padding:14px 16px;cursor:pointer;display:grid;gap:3px}
+.door strong{font:750 18px var(--f-display);font-stretch:86%}
+.door span{font-size:13px;color:var(--ink-2)}
+.door[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--accent-soft)}
+.door-layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:20px;align-items:start}
+@media (max-width:980px){.door-layout{grid-template-columns:1fr}}
+.why{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:16px;display:grid;gap:12px}
+.why ul{margin:0;padding-left:18px;display:grid;gap:8px;font-size:13.5px}
+.portal{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);overflow:hidden;min-width:0}
+.portal-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;background:var(--surface-2);border-bottom:1px solid var(--rule)}
+.portal-brand{font:800 16px var(--f-display);font-stretch:80%;letter-spacing:.01em}
+.portal-brand span{color:var(--accent)}
+.portal-body{padding:18px;display:grid;gap:16px;min-width:0}
+.stepper{display:flex;gap:6px;flex-wrap:wrap}
+.step{font:600 12px var(--f-mono);color:var(--ink-3);padding:3px 10px;border-radius:999px;border:1px solid var(--rule)}
+.step.on{color:var(--accent-ink);background:var(--accent);border-color:var(--accent)}
+.step.done{color:var(--good);border-color:var(--good)}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.choice{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--rule);border-radius:var(--r-sm);padding:10px 12px;cursor:pointer;font-size:14px}
+.choice:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.choice input{margin-top:4px;accent-color:var(--accent)}
+.choice small{display:block;color:var(--ink-3);font-size:12px}
+.optlist{display:grid;gap:10px}
+.optcard{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:14px;align-items:center;border:1px solid var(--rule);border-radius:var(--r-sm);padding:12px 14px}
+.optcard.first{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+@media (max-width:560px){.optcard{grid-template-columns:1fr}}
+.when{display:grid;gap:0}
+.when b{font:800 22px/1.1 var(--f-display);font-stretch:82%}
+.when span{font:500 12px var(--f-mono);color:var(--ink-2)}
+.who{display:grid;gap:4px;min-width:0}
+.who .name{font-weight:600}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font:600 11px/1.6 var(--f-mono);padding:0 7px;border-radius:4px;background:var(--surface-2);color:var(--ink-2);white-space:nowrap}
+.badge.sug{background:var(--accent);color:var(--accent-ink)}
+.badge.rot{background:var(--data-soft);color:var(--data)}
+.badge.match{background:var(--good-soft);color:var(--good)}
+.estimate{border:1px solid var(--rule);border-radius:var(--r-sm);padding:12px;background:var(--surface-2);font-size:13.5px;display:grid;gap:4px}
+.confirm{border:1px solid var(--good);background:var(--good-soft);border-radius:var(--r-sm);padding:14px;display:grid;gap:6px}
+.funnel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media (max-width:640px){.funnel{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.fstep{border:1px solid var(--rule);border-radius:var(--r-sm);padding:10px;display:grid;gap:2px}
+.fstep b{font:800 24px/1.1 var(--f-display);font-stretch:82%;font-variant-numeric:tabular-nums}
+.fstep span{font-size:12px;color:var(--ink-2)}
+.prog{display:flex;gap:3px;align-items:center}
+.prog i{width:16px;height:6px;border-radius:2px;background:var(--surface-2);display:inline-block}
+.prog i.on{background:var(--data)}
+.prog i.last.on{background:var(--good)}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:16px;align-items:start}
+@media (max-width:860px){.cols{grid-template-columns:1fr}}
+.sched td.cell{text-align:center;font:500 12px var(--f-mono);padding:6px 4px;min-width:52px}
+.sched th{text-align:center}
+.sched th:first-child,.sched td:first-child{text-align:left}
+.qa{display:grid;gap:8px;font-size:13.5px}
+.qa .q,.qa .a{padding:10px 12px;border-radius:var(--r-sm);border:1px solid var(--rule)}
+.qa .a{background:var(--surface-2)}
+.guard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.guard{grid-template-columns:1fr}}
+.guard ul{margin:6px 0 0;padding-left:18px;font-size:13.5px;display:grid;gap:4px}
+.login{max-width:420px;display:grid;gap:10px}
+
+/* Capacity */
+.cap-grid{display:grid;grid-template-columns:minmax(280px,340px) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:960px){.cap-grid{grid-template-columns:1fr}}
+.clinics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.clinics{grid-template-columns:1fr}}
+.clinic{border:1px solid var(--rule);border-radius:var(--r);padding:14px;background:var(--surface);display:grid;gap:8px}
+.gauge-row{display:grid;grid-template-columns:52px minmax(0,1fr) 54px;gap:8px;align-items:center;font-size:12.5px}
+.gauge{position:relative;height:12px;background:var(--surface-2);border-radius:999px;overflow:hidden}
+.gauge .fill{position:absolute;inset:0 auto 0 0;background:var(--data-2);border-radius:999px}
+.gauge .fill.now{background:var(--data)}
+.gauge .tmark{position:absolute;top:0;bottom:0;width:2px;background:var(--accent)}
+.bigstat{font:800 28px/1.05 var(--f-display);font-stretch:82%;font-variant-numeric:tabular-nums}
+
+/* Sources */
+.src-list{margin:0;padding-left:18px;display:grid;gap:6px;font-size:13.5px}
+
+/* Toast */
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:var(--r-sm);font-size:14px;max-width:min(92vw,560px);z-index:20;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+
+footer{border-top:1px solid var(--rule);background:var(--surface)}
+footer .wrap{padding-block:18px 26px;font-size:12.5px;color:var(--ink-2);display:grid;gap:6px}
+</style>
+
+</head>
+<body>
+<header class="band">
+  <div class="wrap head">
+    <div>
+      <p class="eyebrow">Project Silver · Deloitte Capstone 2026 · Team Lorazepam, IIM Lucknow</p>
+      <h1>One Bellwood</h1>
+      <p class="lede">Interactive companion to our recommendation for Bellwood Health System: one front door, one capacity network, one workforce. Test our numbers, try the booking prototype, and check every source. The deck stands on its own; this page lets you push on it.</p>
+    </div>
+    <aside class="legend" aria-label="How figures are tagged">
+      <p class="legend-title">Every figure is tagged</p>
+      <ul>
+        <li><span class="tag case">Case</span> Deloitte case data</li>
+        <li><span class="tag src">Source</span> Published evidence, linked</li>
+        <li><span class="tag asm">Assumption</span> Our judgement, adjustable here</li>
+        <li><span class="tag demo">Demo</span> Sample data in the prototype</li>
+      </ul>
+    </aside>
+  </div>
+  <div class="wrap guide">
+    <p class="guide-title">Ten-minute tour</p>
+    <ol class="guide-steps">
+      <li><b>Margin model.</b> Switch between Most probable, Favourable and Break the strategy, then move any slider.</li>
+      <li><b>One front door.</b> Book as a patient, then open the staff view and try to give the same slot to a phone caller.</li>
+      <li><b>Ortho capacity.</b> Move clinic sessions and routine follow-ups between the two orthopedic clinics.</li>
+      <li><b>Sources.</b> Case facts, external evidence, our assumptions, and figures we checked and rejected.</li>
+    </ol>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Sections">
+  <div class="wrap" role="tablist">
+    <button class="tab" role="tab" id="tabbtn-model" data-tab="model" aria-controls="tab-model">Margin model</button>
+    <button class="tab" role="tab" id="tabbtn-front-door" data-tab="front-door" aria-controls="tab-front-door">One front door</button>
+    <button class="tab" role="tab" id="tabbtn-capacity" data-tab="capacity" aria-controls="tab-capacity">Ortho capacity</button>
+    <button class="tab" role="tab" id="tabbtn-sources" data-tab="sources" aria-controls="tab-sources">Sources and assumptions</button>
+  </div>
+</nav>
+
+<main>
+<!-- ===================== MARGIN MODEL ===================== -->
+<section class="panel wrap" id="tab-model" role="tabpanel" aria-labelledby="tabbtn-model">
+  <div class="panel-head">
+    <h2>Margin model: how far the plan gets toward 7%</h2>
+    <p>Month-18 exit run-rate built only from levers the case lets us size. Inpatient flow, revenue integrity and orthopedic site of care stay locked until the month-3 diagnostic proves them, so nothing is counted twice. Margin = (today's $92M operating income + gains) ÷ ($2,300M revenue + revenue added by recovered referrals).</p>
+  </div>
+  <div class="presets" role="group" aria-label="Scenario presets">
+    <button class="preset" type="button" data-preset="probable" aria-pressed="false">Most probable</button>
+    <button class="preset" type="button" data-preset="favourable" aria-pressed="false">Favourable</button>
+    <button class="preset stress" type="button" data-preset="stress" aria-pressed="false">Break the strategy</button>
+    <span class="custom-flag" id="customFlag" hidden>Custom scenario</span>
+    <p class="preset-desc" id="presetDesc"></p>
+  </div>
+  <div class="model-grid">
+    <form class="controls" id="controls" aria-label="Model assumptions"></form>
+    <div class="stack">
+      <div class="kpis" id="kpis"></div>
+      <div class="card">
+        <h3>How far the sized levers close the gap to 7%</h3>
+        <p class="sub">Annual run-rate at month 18, in $M of operating income, drawn to one scale. The dashed block is what the locked pipeline must still deliver.</p>
+        <div class="wf" id="wf"></div>
+        <div id="overlapNote"></div>
+      </div>
+      <div class="card">
+        <h3>Run-rate operating margin, month by month</h3>
+        <p class="sub">Each lever ramps in from its start month. Gates decide when the next tranche of the $35M is released.</p>
+        <div class="chart" id="marginChart"><svg role="img" aria-label="Run-rate operating margin by month"></svg></div>
+        <div class="chart-legend"><span><i class="sw" style="background:var(--data)"></i>Run-rate margin</span><span><i class="sw" style="background:var(--accent)"></i>7% target</span><span><i class="sw" style="background:var(--ink-3)"></i>4% today</span></div>
+        <div class="gates" id="gates"></div>
+      </div>
+      <div class="card">
+        <h3>Cash: what goes in and what comes back</h3>
+        <p class="sub">Cumulative one-off investment (three gated tranches, $35M cap) against cumulative incremental operating income. Running costs are already inside operating income.</p>
+        <div class="chart" id="cashChart"><svg role="img" aria-label="Cumulative investment and cumulative incremental operating income"></svg></div>
+        <div class="chart-legend"><span><i class="sw" style="background:var(--cost)"></i>Cumulative investment</span><span><i class="sw" style="background:var(--data)"></i>Cumulative incremental operating income</span></div>
+        <div class="tbl-wrap" style="margin-top:12px">
+          <table class="tbl">
+            <thead><tr><th>Tranche</th><th>Months</th><th>Main uses</th><th class="num">$M</th></tr></thead>
+            <tbody>
+              <tr><td>T1</td><td>0–6</td><td>Shared schedule and three portals 3.0 <span class="tag asm">Assumption</span>; central access team 2.0; float pool and first hiring wave 3.0; diagnostics and transformation office 1.5; ortho delegation pilot, transport support, scribe pilot, AI governance 1.5; billing clarity 1.0</td><td class="num">12.0</td></tr>
+              <tr><td>T2</td><td>6–12</td><td>AI scheduling and referral tracking 5.0 <span class="tag case">Case $4–6M</span>; one clinic reconfiguration 3.0 <span class="tag case">Case $2–4M</span>; second hiring wave 3.0; metro outreach pilot 1.0; surgery-day pathway and discharge pilot 1.0</td><td class="num">13.0</td></tr>
+              <tr><td>T3</td><td>12–18</td><td>Second reconfiguration if justified 3.0 <span class="tag case">Case</span>; scale proven pilots 2.0; contingency held by the CFO 5.0</td><td class="num">10.0</td></tr>
+            </tbody>
+            <tfoot><tr><td colspan="3">Total within the hard cap <span class="tag case">Case $35M</span>. Reinvested savings fund nothing inside the 18 months.</td><td class="num">35.0</td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Lever detail</h3>
+        <p class="sub">Who owns each lever, when it lands, how sure we are, and what evidence releases it.</p>
+        <div class="tbl-wrap"><table class="tbl" id="leverTable"></table></div>
+      </div>
+      <div class="card">
+        <h3>Pipeline to 7%: locked until evidence</h3>
+        <p class="sub" id="pipeSub"></p>
+        <div class="locks">
+          <div class="lockcard"><div class="row"><span class="pill lock">Locked</span><h4>Inpatient flow</h4></div><p>Surgery-day planning and discharge reliability on the $1,100M inpatient line <span class="tag case">Case</span>. Late-week joint replacement added 0.36 days of stay in one large US system <span class="tag src">Source</span>, but a hospital on a standard pathway saw no day-of-week effect. Release when Bellwood's own length-of-stay data shows avoidable days, net of labour savings already counted.</p></div>
+          <div class="lockcard"><div class="row"><span class="pill lock">Locked</span><h4>Revenue integrity</h4></div><p>Claim denials written off and underpayments. Measure Bellwood's baseline with HFMA's standard denial write-off metric <span class="tag src">Source</span>. No external percentage is applied.</p></div>
+          <div class="lockcard"><div class="row"><span class="pill lock">Locked</span><h4>Ortho site of care</h4></div><p>Which procedures could move to lower-cost settings. Medicare data show joint replacements shifting to surgery centres, while a commercial-claims study found payments there can be higher <span class="tag src">Source</span>. Release only with Bellwood's payer mix and procedure list.</p></div>
+          <div class="lockcard"><div class="row"><span class="pill lock">Locked</span><h4>Neighbouring metro</h4></div><p>Bellwood gets 7,200 of 180,000 referrals (4%) <span class="tag case">Case</span>. Visiting-specialist outreach first. A clinic ($12–18M upfront, $3–5M a year fixed <span class="tag case">Case</span>) is considered only if Gate 3 passes.</p></div>
+        </div>
+      </div>
+      <details class="card" id="arithCard">
+        <summary>Show the arithmetic</summary>
+        <div class="arith" id="arith"></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FRONT DOOR ===================== -->
+<section class="panel wrap" id="tab-front-door" role="tabpanel" aria-labelledby="tabbtn-front-door" hidden>
+  <div class="panel-head">
+    <h2>One front door: three doors onto one schedule</h2>
+    <p>A clickable prototype of the access fix. Patients, outside doctors and Bellwood staff all read and write the same schedule in the EHR Bellwood already runs, so a slot taken by phone disappears online at once. Clinicians and slots are sample data <span class="tag demo">Demo</span>; this is not a booking system.</p>
+  </div>
+  <div class="doors" role="group" aria-label="Choose a door">
+    <button class="door" type="button" data-door="patient" aria-pressed="true"><strong>I'm a patient</strong><span>No login. See slots across sites, book with a phone number.</span></button>
+    <button class="door" type="button" data-door="doctor" aria-pressed="false"><strong>I'm a referring doctor</strong><span>Login. Send referrals, track them, ask a specialist.</span></button>
+    <button class="door" type="button" data-door="staff" aria-pressed="false"><strong>Bellwood staff</strong><span>Login. One schedule, phone bookings, referral work queue.</span></button>
+  </div>
+  <div class="door-layout">
+    <div>
+      <div class="portal" id="door-patient"></div>
+      <div class="portal" id="door-doctor" hidden></div>
+      <div class="portal" id="door-staff" hidden></div>
+    </div>
+    <aside class="why" aria-label="Why it is designed this way">
+      <h3>Why it works this way</h3>
+      <ul>
+        <li><b>Half of referral leakage is at booking.</b> Of every 10,000 referrals, 2,600 are never booked within 60 days, out of 5,200 that never complete the loop <span class="tag case">Case</span>.</li>
+        <li><b>Doctors say the same.</b> 42% of referring doctors find booking difficult and 36% report gaps in follow-up, while 82% rate the care positively <span class="tag case">Case</span>.</li>
+        <li><b>One schedule ends double booking.</b> Phone and online read the same slots in the EHR. No second database to keep in sync.</li>
+        <li><b>Right specialist first.</b> At least 40% of orthopedic patients put both expertise and rapid access in their top two (78% + 62% − 100%) <span class="tag case">Case</span>. Options are ordered by subspecialty match, then earliest date, then distance.</li>
+        <li><b>AI suggests; people decide.</b> The scheduler orders options and flags overdue referrals. Patients choose; clinicians triage.</li>
+        <li><b>Evidence.</b> Centralised referral scheduling raised completion from 63.7% to 69.9% in a Midwest system <span class="tag src">Source</span>. At Mayo Clinic Health System, 29.5% of online self-bookings happened outside office hours <span class="tag src">Source</span>. In an Ontario eConsult service, 40% of eConsults avoided a planned referral, with a 2-day median reply <span class="tag src">Source</span>.</li>
+      </ul>
+    </aside>
+  </div>
+</section>
+
+<!-- ===================== CAPACITY ===================== -->
+<section class="panel wrap" id="tab-capacity" role="tabpanel" aria-labelledby="tabbtn-capacity" hidden>
+  <div class="panel-head">
+    <h2>Ortho capacity: lopsided, not full</h2>
+    <p>The two orthopedic clinics together use 32,800 of 40,000 staffed slots, or 82% <span class="tag case">Case</span>. Core runs at 94% with a 28-day median wait; Suburban at 70% with 11 days <span class="tag case">Case</span>. Rotate surgeon sessions, steer willing patients to the earlier site, and move routine late follow-ups to Bellwood's own nurse practitioners and physician assistants at the surgeon's discretion.</p>
+  </div>
+  <div class="cap-grid">
+    <form class="controls" id="capControls" aria-label="Capacity levers"></form>
+    <div class="stack">
+      <div class="clinics" id="clinics"></div>
+      <div class="kpis" id="capKpis" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))"></div>
+      <div class="card">
+        <h3>Illustrative wait sensitivity</h3>
+        <p class="sub">Queues lengthen sharply as a clinic nears full. This curve is fitted to Bellwood's two clinics only (wait = 8.0 + 1.275 × u ÷ (1 − u), where u is utilisation), so it is directional, not a forecast. A 90-day pilot measures the real wait by subspecialty.</p>
+        <div class="chart" id="waitChart"><svg role="img" aria-label="Illustrative wait versus utilisation"></svg></div>
+        <div class="chart-legend"><span><i class="sw" style="background:var(--data)"></i>Fitted curve</span><span><i class="sw" style="background:var(--ink-3)"></i>Today</span><span><i class="sw" style="background:var(--accent)"></i>After your changes</span><span><i class="sw" style="background:var(--good-soft);height:8px"></i>12–14 day target band</span></div>
+      </div>
+      <div class="card">
+        <h3>Rules for follow-up delegation</h3>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Rule</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Early post-op visits stay with the surgeon</td><td>Highest clinical risk; continuity with the operating surgeon.</td></tr>
+            <tr><td>Later routine visits move only at the surgeon's discretion, under a protocol with red-flag escalation</td><td>Wound checks once infection risk is low, routine progress reviews. Surgeon remains accountable.</td></tr>
+            <tr><td>Keep delegated visits inside Bellwood's own group</td><td>From 2025, Medicare keeps the full 90-day global payment when another practitioner in the same group gives the post-op care (modifiers -54 and -55) <span class="tag src">Source</span>. An outside clinic would take that portion.</td></tr>
+            <tr><td>Use nurse practitioners and physician assistants</td><td>Nebraska gives nurse practitioners full practice authority after 2,000 transition hours <span class="tag src">Source</span>. Bellwood is based in Omaha <span class="tag case">Case</span>.</td></tr>
+            <tr><td>Do it where surgeons are the bottleneck</td><td>At Core, freed surgeon time becomes new-patient slots. At Suburban it would only shift cost.</td></tr>
+            <tr><td>Pilot and track outcomes</td><td>Published evidence on NP/PA-led orthopedic follow-up is thin. Track unplanned returns, complications and patient satisfaction.</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SOURCES ===================== -->
+<section class="panel wrap" id="tab-sources" role="tabpanel" aria-labelledby="tabbtn-sources" hidden>
+  <div class="panel-head">
+    <h2>Sources and assumptions</h2>
+    <p>Bellwood is fictional; the Deloitte case is the only source of truth about it. External figures are industry reference points only. We used three AI models (Claude, ChatGPT, Gemini) for research and critique, then checked each figure we use against its original source.</p>
+  </div>
+  <div class="stack">
+    <div class="card">
+      <h3>Case facts used</h3>
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Fact</th><th>Value</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td>Revenue and operating margin, FY25</td><td class="mono">$2,300M · 4% ($92M)</td><td>Baseline; 7% target gap = $69M at today's revenue</td></tr>
+          <tr><td>Service lines (revenue · margin)</td><td class="mono">Primary/urgent $400M · 1% · Ortho $300M · 10% · Other specialty $500M · 5% · Inpatient/ED $1,100M · 3%</td><td>Diagnosis; operating income reconciles to $92M</td></tr>
+          <tr><td>Cost lines</td><td class="mono">Contract labour $120M (FY23 $85M) · non-clinical $180M · admin/support $200M, 30% scheduling, referral, billing, coding</td><td>Workforce and cost levers</td></tr>
+          <tr><td>Referral follow-through (10,000 sample, 60 days)</td><td class="mono">7,400 booked · 6,500 first visit · 4,800 follow-up sent</td><td>Front-door diagnosis; 90,000 referrals a year</td></tr>
+          <tr><td>Orthopedic clinics</td><td class="mono">Core 20,000 slots · 94% · 28 days; Suburban 20,000 · 70% · 11 days</td><td>Capacity network</td></tr>
+          <tr><td>Episode economics</td><td class="mono">$1,500–2,500 net revenue · ~3 ortho slots · 25–35% contribution</td><td>Referral recovery value</td></tr>
+          <tr><td>Surveys</td><td class="mono">Patients n=200 per group; referring doctors n=100</td><td>Segments and needs</td></tr>
+          <tr><td>Investment and options</td><td class="mono">$35M hard cap · savings reinvestable · AI scheduling $4–6M + $1.5M/yr · scribes $3,000/clinician/yr · reconfiguration $2–4M/site · new clinic $12–18M + $3–5M/yr</td><td>Funding plan, running costs, metro decision</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <h3>External evidence</h3>
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Finding</th><th>Population · year</th><th>How we use it</th></tr></thead>
+        <tbody>
+          <tr><td>Travel RN $195,125 vs staff RN $116,035 a year (staff figure includes 26.7% benefits): 40.5% saving per converted role. <a href="https://www.nsinursingsolutions.com/Documents/Library/Travel_Vs_Core_Staff.pdf" target="_blank" rel="noopener">NSI Nursing Solutions</a></td><td>US nursing; cites 2025 data; recruitment firm; disputed by the staffing association NATHO</td><td>Contract-labour saving rate; 35% used in the most probable case</td></tr>
+          <tr><td>Centralised referral scheduling: completion 63.7% → 69.9%; time to schedule 21 → 15 days; uneven by specialty. <a href="https://wmjonline.org/?p=5125" target="_blank" rel="noopener">Bongers et al., WMJ</a></td><td>Midwest academic system · 2021</td><td>Referral recovery: +3 points most probable, +6.2 favourable</td></tr>
+          <tr><td>79.2% of specialty referrals completed within 3 months; higher when the practice schedules. <a href="https://www.annfammed.org/content/5/4/361.abstract" target="_blank" rel="noopener">Forrest et al., Ann Fam Med</a></td><td>US primary care · 2007</td><td>Book the specialist during the primary-care visit</td></tr>
+          <tr><td>About 5% of well-child visits self-booked online; 29.5% of self-bookings outside office hours. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8077742/" target="_blank" rel="noopener">North et al., JMIR Med Inform</a></td><td>Mayo Clinic Health System · 2021</td><td>Online booking serves convenience; phone and central team stay central</td></tr>
+          <tr><td>eConsult: 40% avoided a planned referral; median specialist reply 2 days; 92% of doctors rated it valuable. <a href="https://www.jabfm.org/content/32/2/146.full.pdf" target="_blank" rel="noopener">Liddy et al., JABFM</a></td><td>Ontario, Canada · 2019 (non-US)</td><td>eConsult on the referring-doctor door</td></tr>
+          <tr><td>New-patient orthopedic wait averaged 12.0 days (16.9 in 2022). <a href="https://www.amnhealthcare.com/siteassets/amn-insights/physician/ps-2025-physician-appt-wait-times---wp-v6.pdf" target="_blank" rel="noopener">AMN / Merritt Hawkins</a></td><td>15 large US metros · 2025</td><td>Core's 28 days is 2.3× the average</td></tr>
+          <tr><td>Aggregate operating margin 14.0% for for-profit hospitals, 4.4% non-profit. <a href="https://www.kff.org/health-costs/hospital-margins-rebounded-in-2023-but-rural-hospitals-and-those-with-high-medicaid-shares-were-struggling-more-than-others/" target="_blank" rel="noopener">KFF analysis of RAND data</a></td><td>US hospitals · 2023</td><td>7% is a modest target for an investor-owned system</td></tr>
+          <tr><td>AI scribes: ~15,791 physician-hours saved (<a href="https://www.ama-assn.org/practice-management/digital-health/ai-scribes-save-15000-hours-and-restore-human-side-medicine" target="_blank" rel="noopener">Kaiser/TPMG via AMA</a>); burnout 51.9% → 38.8% (<a href="https://www.newswise.com/articles/study-ai-scribes-lower-physician-burnout-lend-patients-more-undivided-attention" target="_blank" rel="noopener">Olson et al., JAMA Netw Open</a>); documentation −15% with no throughput change (<a href="https://medinform.jmir.org/2026/1/e85580/PDF" target="_blank" rel="noopener">JMIR Med Inform</a>)</td><td>US 2023–25; Singapore 2026</td><td>Scribes are a retention tool. No visit gains or savings credited.</td></tr>
+          <tr><td>Late-week joint replacement added 0.36 days of stay (<a href="https://read.qxmd.com/read/27471211/day-of-surgery-affects-length-of-stay-and-charges-in-primary-total-hip-and-knee-arthroplasty" target="_blank" rel="noopener">Newman et al., J Arthroplasty 2017</a>); none on a standard pathway (<a href="https://read.qxmd.com/read/27378632/effect-of-total-joint-arthroplasty-surgical-day-of-the-week-on-length-of-stay-and-readmissions-a-clinical-pathway-approach" target="_blank" rel="noopener">J Arthroplasty 2016</a>)</td><td>US · data 2010–12; single hospital</td><td>Surgery-day planning (pipeline, unsized)</td></tr>
+          <tr><td>2025 global-surgery transfer-of-care rules (modifiers -54/-55). <a href="https://www.asrs.org/advocacy/updates/10401/new-for-2025-expanded-requirements-for-transfer-of-care-modifier-54" target="_blank" rel="noopener">ASRS summary of CMS rule</a></td><td>Medicare · 2025</td><td>Keep delegated follow-ups in-house</td></tr>
+          <tr><td>Nebraska NP full practice authority after 2,000 transition hours. <a href="https://campaignforaction.org/nebraska-joins-19-states-d-c-modernizing-nurse-practitioner-law/" target="_blank" rel="noopener">LB107 summary</a></td><td>Nebraska · 2015</td><td>Delegation is legally feasible</td></tr>
+          <tr><td>Joint Commission and Coalition for Health AI guidance: governance, transparency, data security, quality monitoring, safety-event reporting, bias checks, training. <a href="https://www.duanemorris.com/alerts/joint_commission_coalition_health_ai_issue_guidance_provider_use_ai_0925.html" target="_blank" rel="noopener">Duane Morris summary</a></td><td>US · Sept 2025</td><td>AI safeguards (aligned with, not certified)</td></tr>
+          <tr><td>Text reminders vs none: attendance RR 1.14. <a href="https://www.cochrane.org/CD007458" target="_blank" rel="noopener">Cochrane review</a></td><td>8 trials · 2013</td><td>Reminders help, but Bellwood's 87.8% attendance among booked patients limits the gain</td></tr>
+          <tr><td>Denial write-off metric definition. <a href="https://www.hfma.org/guidance/standardizing-denial-metrics-revenue-cycle-benchmarking-process-improvement/" target="_blank" rel="noopener">HFMA</a></td><td>US</td><td>Baseline measure for revenue integrity (no benchmark applied)</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <h3>Our assumptions</h3>
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Assumption</th><th>Most probable · Favourable</th><th>Why</th><th>Tested here</th></tr></thead>
+        <tbody>
+          <tr><td>Contract spend converted to employed staff</td><td class="mono">$35M · $60M</td><td>$35M is the growth since FY23; $60M is half the pool. Role mix unknown until month 3.</td><td>Slider</td></tr>
+          <tr><td>Saving per $ converted</td><td class="mono">35% · 40.5%</td><td>NSI's 40.5% is nursing only and excludes recruitment and onboarding, so the base case takes a haircut.</td><td>Slider</td></tr>
+          <tr><td>Admin savings</td><td class="mono">10% of $60M · 10% of $200M</td><td>Central access team and shared schedule act first on scheduling and referral work.</td><td>Slider</td></tr>
+          <tr><td>Non-clinical savings</td><td class="mono">0% · 7.5% of $180M</td><td>No case detail; favourable only, and only if the month-3 mapping proves no overlap with admin.</td><td>Slider</td></tr>
+          <tr><td>Extra referrals seen</td><td class="mono">+3 · +6.2 points of 90,000</td><td>Half, then all, of the published centralised-scheduling effect; capacity-dependent.</td><td>Slider</td></tr>
+          <tr><td>Each recovered referral is one specialty episode</td><td class="mono">$1,500 at 25% (low end)</td><td>Case defines economics "per specialty episode"; presets use the low end.</td><td>Sliders</td></tr>
+          <tr><td>Scribe cost allowance</td><td class="mono">$1.5M a year</td><td>About 500 clinicians at $3,000 <span class="tag case">Case</span>; headcount not given.</td><td>Slider</td></tr>
+          <tr><td>Lever timing</td><td class="mono">Labour m3–18 · admin m6–18 · referrals m4–18</td><td>Linear ramps; AI scheduling run cost from month 10 after the month-6 gate.</td><td>Delay slider</td></tr>
+          <tr><td>Follow-ups as a share of ortho visits</td><td class="mono">About 2 in 3</td><td>An episode uses about three slots <span class="tag case">Case</span>: one new visit plus two follow-ups.</td><td>Capacity tab</td></tr>
+          <tr><td>Portal and central team build</td><td class="mono">$3.0M + $2.0M</td><td>Reuses existing EHR modules; vendor pricing is not public.</td><td>Tranche table</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <h3>Checked and not used</h3>
+      <p class="sub">Figures that appeared during AI-assisted research but failed verification against their original source.</p>
+      <ul class="src-list">
+        <li>"Orthopedic waits over 14 days make 22% of patients defect": the cited paper has no such figure.</li>
+        <li>"About $17M of downstream revenue needed per physician": not found in the cited data.</li>
+        <li>"Reminders cut no-shows by 29%" and "self-scheduling gave 4× bookings": vendor material only.</li>
+        <li>"Internal float pool at $140k vs $190k agency": no source.</li>
+        <li>"Denial write-offs 0.85–1.15% of revenue": HFMA publishes the metric definition, not this benchmark.</li>
+        <li>"$420–580 per excess hospital day" and "ASC rates 46% lower": could not be traced to the cited sources.</li>
+        <li>An inpatient +1 point margin gain stacked on labour and admin savings: removed as double counting, because the case allocates costs once across the four service lines.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Team Lorazepam</b> · Dr. Anand B Gowda (PGP41409) and Vidushi Sachdeva (PGP41454) · IIM Lucknow</p>
+    <p>Bellwood Health System is a fictional company from the Deloitte Capstone case. The booking prototype uses sample clinicians and slots and is not a real booking system. Model figures are tagged Case, Source or Assumption.</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(function(){
+"use strict";
+var $ = function(s, r){ return (r||document).querySelector(s); };
+var $$ = function(s, r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function money(v, d){ d = d == null ? 1 : d; return (v < -0.0005 ? '−' : '') + '$' + Math.abs(v).toFixed(d) + 'M'; }
+function pct(v, d){ d = d == null ? 2 : d; return (v*100).toFixed(d) + '%'; }
+function fmtInt(v){ return Math.round(v).toLocaleString('en-US'); }
+var SVGNS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs, parent){ var e = document.createElementNS(SVGNS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function svgText(parent, x, y, txt, cls, anchor){ var t = svgEl('text', {x:x, y:y, 'class':cls, 'text-anchor':anchor||'start'}, parent); t.textContent = txt; return t; }
+
+var toastTimer = null;
+function toast(msg){ var t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(function(){ t.hidden = true; }, 4200); }
+
+/* ---------------- Tabs ---------------- */
+var TABS = ['model','front-door','capacity','sources'];
+function showTab(id){
+  if (TABS.indexOf(id) < 0) id = 'model';
+  TABS.forEach(function(t){
+    var b = $('#tabbtn-'+t), p = $('#tab-'+t), on = t === id;
+    b.setAttribute('aria-selected', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1; p.hidden = !on;
+  });
+  if (id === 'model') renderModel();
+  if (id === 'capacity') renderCapacity();
+}
+$$('.tab').forEach(function(b){ b.addEventListener('click', function(){ var id = b.getAttribute('data-tab'); if (location.hash !== '#'+id) location.hash = id; else showTab(id); }); });
+window.addEventListener('hashchange', function(){ showTab(location.hash.replace('#','')); });
+
+/* ---------------- Line chart helper ---------------- */
+function lineChart(holder, cfg){
+  var svg = holder.querySelector('svg');
+  var W = Math.max(300, Math.floor(holder.clientWidth || 600)), H = cfg.h || 250;
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  var m = {l:52, r:16, t:24, b:30};
+  var xMin = cfg.xMin || 0;
+  function X(x){ return m.l + (x - xMin)/(cfg.xMax - xMin)*(W - m.l - m.r); }
+  function Y(y){ return m.t + (1 - (y - cfg.yMin)/(cfg.yMax - cfg.yMin))*(H - m.t - m.b); }
+  (cfg.bands||[]).forEach(function(b){
+    svgEl('rect', {x:m.l, y:Y(b.y2), width:W-m.l-m.r, height:Math.max(1, Y(b.y1)-Y(b.y2)), 'class':b.cls}, svg);
+    if (b.label) svgText(svg, m.l + 6, Y(b.y2) - 4, b.label, b.cls + '-label');
+  });
+  cfg.yTicks.forEach(function(v){ svgEl('line', {x1:m.l, x2:W-m.r, y1:Y(v), y2:Y(v), 'class':'g-grid'}, svg); svgText(svg, m.l-7, Y(v)+4, cfg.yFmt(v), 'g-tick', 'end'); });
+  cfg.xTicks.forEach(function(v){ svgText(svg, X(v), H-9, cfg.xFmt(v), 'g-tick', 'middle'); });
+  (cfg.vlines||[]).forEach(function(v){ svgEl('line', {x1:X(v.x), x2:X(v.x), y1:m.t, y2:H-m.b, 'class':'g-vline'}, svg); svgText(svg, X(v.x)+3, m.t + 10, v.label, 'g-vlabel'); });
+  (cfg.hlines||[]).forEach(function(h){ svgEl('line', {x1:m.l, x2:W-m.r, y1:Y(h.y), y2:Y(h.y), 'class':h.cls}, svg); if (h.label) svgText(svg, W-m.r-4, Y(h.y)-5, h.label, h.cls+'-label', 'end'); });
+  cfg.series.forEach(function(s){
+    var d = s.pts.map(function(p, i){ return (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1); }).join(' ');
+    svgEl('path', {d:d, 'class':s.cls}, svg);
+  });
+  (cfg.dots||[]).forEach(function(dt){
+    svgEl('circle', {cx:X(dt.x), cy:Y(dt.y), r:5, 'class':dt.cls}, svg);
+    if (dt.label){ var nearRight = X(dt.x) > W - 150; svgText(svg, X(dt.x) + (nearRight ? -9 : 9), Y(dt.y) + (dt.dy || -9), dt.label, 'g-dotlabel', nearRight ? 'end' : 'start'); }
+  });
+  if (cfg.yTitle) svgText(svg, 4, 12, cfg.yTitle, 'g-axt');
+}
+function niceTicks(lo, hi, step){ var a = []; for (var v = Math.ceil(lo/step)*step; v <= hi + 1e-9; v += step) a.push(+v.toFixed(6)); return a; }
+
+/* =================================================================
+   MARGIN MODEL
+   ================================================================= */
+var CASE = {rev:2300, oi:92, target:0.07, refs:90000, nc:180, travel:195125};
+var LEV = {cl:{s:3, L:15}, adm:{s:6, L:12}, nc:{s:6, L:12}, ref:{s:4, L:14}, aiStart:10};
+var PRESETS = {
+  probable:{cl_conv:35, cl_rate:35, admin_pool:60, admin_pct:10, nc_pct:0, ref_pp:3, ep_rev:1500, ep_cm:25, run_ai:true, run_scribe:1.5, delay:0},
+  favourable:{cl_conv:60, cl_rate:40.5, admin_pool:200, admin_pct:10, nc_pct:7.5, ref_pp:6.2, ep_rev:1500, ep_cm:25, run_ai:true, run_scribe:1.5, delay:0},
+  stress:{cl_conv:15, cl_rate:25, admin_pool:60, admin_pct:5, nc_pct:0, ref_pp:1, ep_rev:1500, ep_cm:25, run_ai:true, run_scribe:1.5, delay:4}
+};
+var PRESET_DESC = {
+  probable:'Most probable: convert the $35M of contract-labour growth since FY23 at a 35% saving, trim 10% of the $60M scheduling, referral, billing and coding work, and recover 3 more points of referrals. Episode economics at the low end of the case range.',
+  favourable:'Favourable: convert half the $120M contract pool at NSI’s 40.5%, take 10% of all $200M admin and 7.5% of $180M non-clinical spend (only if the month-3 mapping proves they do not overlap), and recover the full published 6.2-point referral effect.',
+  stress:'Break the strategy: hiring slips 4 months, only $15M converts at a 25% saving, admin savings halve and referral recovery barely moves. This shows what still holds when our assumptions go wrong.',
+  custom:'Custom scenario: your own settings. Every output below recomputes from them.'
+};
+var S = JSON.parse(JSON.stringify(PRESETS.probable));
+var currentPreset = 'probable';
+
+var CONTROLS = [
+  {group:'Contract labour', items:[
+    {id:'cl_conv', label:'Contract spend converted to employed staff', min:0, max:120, step:5, fmt:function(v){ return '$' + v + 'M'; }, hint:'<span class="tag case">Case</span> $120M in FY25, up from $85M in FY23'},
+    {id:'cl_rate', label:'Saving per $ converted', min:0, max:45, step:0.5, fmt:function(v){ return v.toFixed(1) + '%'; }, hint:'<span class="tag src">Source</span> NSI: travel RN $195,125 vs staff RN $116,035 incl. benefits = 40.5% (nursing only, excludes recruitment)'}
+  ]},
+  {group:'Admin and non-clinical', items:[
+    {id:'admin_pool', type:'radio', label:'Admin savings apply to', options:[[60,'$60M of scheduling, referral, billing and coding work'],[200,'All $200M of admin and support']], hint:'<span class="tag case">Case</span> 30% of $200M admin/support is scheduling, referral, billing and coding'},
+    {id:'admin_pct', label:'Admin savings', min:0, max:20, step:1, fmt:function(v){ return v + '%'; }, hint:'<span class="tag asm">Assumption</span> Central access team and one shared schedule'},
+    {id:'nc_pct', label:'Non-clinical savings (of $180M)', min:0, max:15, step:0.5, fmt:function(v){ return v.toFixed(1) + '%'; }, hint:'<span class="tag asm">Assumption</span> Purchasing and facilities; no case detail'}
+  ]},
+  {group:'Referral recovery', items:[
+    {id:'ref_pp', label:'Extra referrals seen (points of 90,000)', min:0, max:10, step:0.2, fmt:function(v){ return '+' + v.toFixed(1) + ' pts'; }, hint:'<span class="tag src">Source</span> Centralised scheduling: completion 63.7% → 69.9% (Bongers 2021)'},
+    {id:'ep_rev', label:'Net revenue per episode', min:1500, max:2500, step:100, fmt:function(v){ return '$' + fmtInt(v); }, hint:'<span class="tag case">Case</span> $1,500–2,500 per specialty episode'},
+    {id:'ep_cm', label:'Contribution margin', min:25, max:35, step:1, fmt:function(v){ return v + '%'; }, hint:'<span class="tag case">Case</span> 25–35% before new fixed costs'}
+  ]},
+  {group:'Running costs and timing', items:[
+    {id:'run_ai', type:'check', label:'AI scheduling released at the month-6 gate', hint:'<span class="tag case">Case</span> $1.5M a year to run, counted from month 10'},
+    {id:'run_scribe', label:'AI note-taking (scribes), yearly cost', min:0, max:4, step:0.25, fmt:function(v){ return '$' + v.toFixed(2) + 'M'; }, hint:'<span class="tag case">Case</span> $3,000 per clinician a year; <span class="tag asm">Assumption</span> $1.5M ≈ 500 clinicians. No savings credited.'},
+    {id:'delay', label:'Execution delay', min:0, max:9, step:1, fmt:function(v){ return v === 0 ? 'On plan' : '+' + v + ' months'; }, hint:'<span class="tag asm">Assumption</span> Shifts every lever’s start: hiring or rollout slippage'}
+  ]}
+];
+
+function buildControls(){
+  var f = $('#controls'), html = '';
+  CONTROLS.forEach(function(g){
+    html += '<fieldset><legend>' + esc(g.group) + '</legend>';
+    g.items.forEach(function(c){
+      if (c.type === 'radio'){
+        html += '<div class="ctl"><div class="ctl-top"><label>' + esc(c.label) + '</label></div><div class="opts">';
+        c.options.forEach(function(o){ html += '<label class="opt"><input type="radio" name="' + c.id + '" id="' + c.id + '_' + o[0] + '" value="' + o[0] + '"><span>' + esc(o[1]) + '</span></label>'; });
+        html += '</div><p class="hint">' + c.hint + '</p></div>';
+      } else if (c.type === 'check'){
+        html += '<div class="ctl"><label class="check"><input type="checkbox" id="' + c.id + '"><span>' + esc(c.label) + '</span></label><p class="hint">' + c.hint + '</p></div>';
+      } else {
+        html += '<div class="ctl"><div class="ctl-top"><label for="' + c.id + '">' + esc(c.label) + '</label><output id="' + c.id + '_out" for="' + c.id + '"></output></div>' +
+          '<input type="range" id="' + c.id + '" min="' + c.min + '" max="' + c.max + '" step="' + c.step + '"><p class="hint">' + c.hint + '</p></div>';
+      }
+    });
+    html += '</fieldset>';
+  });
+  f.innerHTML = html;
+  f.addEventListener('input', onControl); f.addEventListener('change', onControl);
+  f.addEventListener('submit', function(e){ e.preventDefault(); });
+}
+function syncControls(){
+  CONTROLS.forEach(function(g){ g.items.forEach(function(c){
+    if (c.type === 'radio'){ var r = $('#' + c.id + '_' + S[c.id]); if (r) r.checked = true; }
+    else if (c.type === 'check'){ $('#' + c.id).checked = !!S[c.id]; }
+    else { $('#' + c.id).value = S[c.id]; $('#' + c.id + '_out').textContent = c.fmt(S[c.id]); }
+  }); });
+}
+function onControl(e){
+  var t = e.target; if (!t || !t.id && !t.name) return;
+  if (t.type === 'radio') S[t.name] = +t.value;
+  else if (t.type === 'checkbox') S[t.id] = t.checked;
+  else if (t.type === 'range') S[t.id] = +t.value;
+  currentPreset = matchPreset();
+  syncControls(); renderModel();
+}
+function matchPreset(){
+  for (var k in PRESETS){ var p = PRESETS[k], same = true; for (var key in p){ if (p[key] !== S[key]) { same = false; break; } } if (same) return k; }
+  return 'custom';
+}
+$$('.preset').forEach(function(b){ b.addEventListener('click', function(){ var k = b.getAttribute('data-preset'); S = JSON.parse(JSON.stringify(PRESETS[k])); currentPreset = k; syncControls(); renderModel(); }); });
+
+function ramp(m, s, L){ return Math.max(0, Math.min(1, (m - s)/L)); }
+function model(p){
+  var CL = p.cl_conv * p.cl_rate/100;
+  var ADM = p.admin_pool * p.admin_pct/100;
+  var NC = CASE.nc * p.nc_pct/100;
+  var eps = p.ref_pp/100 * CASE.refs;
+  var REFC = eps * p.ep_rev * p.ep_cm/100 / 1e6;
+  var REFREV = eps * p.ep_rev / 1e6;
+  var d = p.delay;
+  function at(m){
+    var f = {cl:ramp(m, LEV.cl.s+d, LEV.cl.L), adm:ramp(m, LEV.adm.s+d, LEV.adm.L), nc:ramp(m, LEV.nc.s+d, LEV.nc.L), ref:ramp(m, LEV.ref.s+d, LEV.ref.L)};
+    var scr = m >= 1 ? p.run_scribe : 0;
+    var ai = (p.run_ai && m >= LEV.aiStart + d) ? 1.5 : 0;
+    var g = {cl:CL*f.cl, adm:ADM*f.adm, nc:NC*f.nc, ref:REFC*f.ref, rev:REFREV*f.ref, scr:scr, ai:ai, f:f};
+    g.pos = g.cl + g.adm + g.nc + g.ref; g.run = scr + ai; g.total = g.pos - g.run;
+    g.margin = (CASE.oi + g.total)/(CASE.rev + g.rev);
+    return g;
+  }
+  var months = [], cum = [0], cumSpend = [0], payback = null;
+  for (var m = 0; m <= 120; m++){
+    var g = at(m); months.push(g);
+    if (m >= 1){
+      cum[m] = cum[m-1] + g.total/12;
+      var sp = m <= 6 ? 12/6 : (m <= 12 ? 13/6 : (m <= 18 ? 10/6 : 0));
+      cumSpend[m] = cumSpend[m-1] + sp;
+      if (payback === null && m >= 6 && cum[m] >= cumSpend[m]) payback = m;
+    }
+  }
+  var e = months[18];
+  var R18 = CASE.rev + e.rev, OI18 = CASE.oi + e.total;
+  return {CL:CL, ADM:ADM, NC:NC, eps:eps, REFC:REFC, REFREV:REFREV, at:at, months:months, cum:cum, cumSpend:cumSpend, payback:payback,
+    e:e, R18:R18, OI18:OI18, m18:OI18/R18, targetOI:CASE.target*R18, gap:CASE.target*R18 - OI18, cum18:cum[18]};
+}
+
+function renderModel(){
+  if ($('#tab-model').hidden) return;
+  var r = model(S);
+  // presets
+  $$('.preset').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-preset') === currentPreset ? 'true' : 'false'); });
+  $('#customFlag').hidden = currentPreset !== 'custom';
+  $('#presetDesc').textContent = PRESET_DESC[currentPreset];
+
+  // economics range
+  var lo = model(Object.assign({}, S, {ep_rev:1500, ep_cm:25})).m18, hi = model(Object.assign({}, S, {ep_rev:2500, ep_cm:35})).m18;
+  var met = r.gap <= 0;
+  var pb = r.payback === null ? 'Beyond 10 yrs' : (r.payback/12).toFixed(1) + ' yrs';
+  $('#kpis').innerHTML =
+    '<div class="kpi lead"><span class="k-label">Month-18 exit margin</span><span class="k-val">' + pct(r.m18) + '</span>' +
+      '<span class="k-sub">From 4.00% today. ' + (met ? '<span class="pill good">Meets 7%</span>' : 'Target 7.00%') + '</span>' +
+      '<span class="k-sub">Across case episode economics: ' + pct(Math.min(lo,hi)) + '–' + pct(Math.max(lo,hi)) + '</span></div>' +
+    '<div class="kpi"><span class="k-label">Gap to 7% at exit</span><span class="k-val">' + (met ? '$0.0M' : money(r.gap)) + '</span>' +
+      '<span class="k-sub">' + (met ? 'Sized levers reach the target' : 'What the locked pipeline must deliver each year') + '</span></div>' +
+    '<div class="kpi"><span class="k-label">Incremental operating income, months 1–18</span><span class="k-val">' + money(r.cum18) + '</span>' +
+      '<span class="k-sub">Exit run-rate ' + money(r.e.total) + ' a year</span></div>' +
+    '<div class="kpi"><span class="k-label">Cash payback on $35M</span><span class="k-val">' + pb + '</span>' +
+      '<span class="k-sub">From the start, assuming the full $35M is spent by month 18</span></div>';
+
+  renderWaterfall(r);
+  renderMarginChart(r);
+  renderCashChart(r);
+  renderGates(r);
+  renderLeverTable(r);
+  renderArith(r);
+  $('#pipeSub').innerHTML = r.gap > 0
+    ? 'To reach 7% at month 18 in this scenario, these items must deliver <b>' + money(r.gap) + '</b> a year, with no overlap with labour or admin savings already counted. None is in the totals above.'
+    : 'In this scenario the sized levers already reach 7%. The pipeline items stay locked as upside and as a buffer against slippage.';
+  var ov = $('#overlapNote');
+  ov.innerHTML = (S.admin_pool === 200 && S.nc_pct > 0)
+    ? '<p class="callout">This scenario counts savings on all $200M of admin and on $180M of non-clinical spend. That holds only if the month-3 cost-centre mapping shows the two pools do not overlap.</p>'
+    : '';
+}
+
+function renderWaterfall(r){
+  var e = r.e;
+  var needed = r.targetOI - CASE.oi;                 // OI needed above today's $92M to hit 7% at exit revenue
+  var steps = [
+    {label:'Contract labour', sub:'Employed staff replace agency', v:e.cl},
+    {label:'Admin and support', sub:S.admin_pool === 200 ? 'All $200M pool' : '$60M scheduling and billing work', v:e.adm},
+    {label:'Non-clinical', sub:'Purchasing, facilities', v:e.nc},
+    {label:'Referral recovery', sub:'Contribution from extra episodes', v:e.ref}
+  ];
+  var pos = e.pos, net = e.total;
+  var scale = Math.max(needed, pos, 1);
+  function W(v){ return (Math.max(0, v)/scale*100).toFixed(3) + '%'; }
+  var html = '<div class="wf-scale"><span>$0</span><span>' + money(scale, 0) + '</span></div>';
+  var c = 0;
+  steps.forEach(function(s){
+    html += '<div class="wf-row"><div class="wf-label">' + esc(s.label) + '<small>' + esc(s.sub) + '</small></div><div class="wf-track">' +
+      (s.v > 0 ? '<span class="wf-bar pos" style="left:' + W(c) + ';width:' + W(s.v) + '"></span>' : '') +
+      '<span class="wf-target" style="left:' + W(needed) + '"></span></div><div class="wf-val">+' + money(s.v) + '</div></div>';
+    c += s.v;
+  });
+  html += '<div class="wf-row"><div class="wf-label">Running costs<small>AI scheduling and scribes</small></div><div class="wf-track">' +
+    (e.run > 0 ? '<span class="wf-bar neg" style="left:' + W(Math.max(0, pos - e.run)) + ';width:' + W(Math.min(e.run, pos)) + '"></span>' : '') +
+    '<span class="wf-target" style="left:' + W(needed) + '"></span></div><div class="wf-val">' + money(-e.run) + '</div></div>';
+  html += '<div class="wf-row total"><div class="wf-label"><b>Reached at month 18</b><small>Net run-rate gain</small></div><div class="wf-track">' +
+    (net > 0 ? '<span class="wf-bar net" style="left:0;width:' + W(net) + '"></span>' : '') +
+    '<span class="wf-target" style="left:' + W(needed) + '"></span></div><div class="wf-val">' + money(net) + '</div></div>';
+  html += '<div class="wf-row"><div class="wf-label"><b>Pipeline to 7%</b><small>Locked until evidence</small></div><div class="wf-track">' +
+    (needed > net ? '<span class="wf-bar gap" style="left:' + W(Math.max(net,0)) + ';width:' + W(needed - Math.max(net,0)) + '"></span>' : '') +
+    '<span class="wf-target" style="left:' + W(needed) + '"></span></div><div class="wf-val">' + (needed > net ? money(needed - net) : '$0.0M') + '</div></div>';
+  html += '<p class="note"><span style="display:inline-block;width:2px;height:12px;background:var(--accent);vertical-align:-1px;margin-right:6px"></span>Bronze line: ' + money(needed) + ' a year needed above today’s $92M to reach 7% of month-18 revenue (' + money(r.R18, 1) + ').</p>';
+  $('#wf').innerHTML = html;
+}
+
+function renderMarginChart(r){
+  var pts = [], vmin = 4, vmax = 7;
+  for (var m = 0; m <= 36; m++){ var v = r.months[m].margin*100; pts.push([m, v]); vmin = Math.min(vmin, v); vmax = Math.max(vmax, v); }
+  var yMin = Math.floor((vmin - 0.25)*2)/2, yMax = Math.ceil((vmax + 0.25)*2)/2;
+  var step = (yMax - yMin) > 4 ? 1 : 0.5;
+  var m18 = r.months[18].margin*100;
+  lineChart($('#marginChart'), {
+    h:260, xMax:36, yMin:yMin, yMax:yMax, yTicks:niceTicks(yMin, yMax, step), yFmt:function(v){ return v.toFixed(1) + '%'; },
+    xTicks:[0,6,12,18,24,30,36], xFmt:function(v){ return 'M' + v; },
+    vlines:[{x:3, label:'G1'}, {x:6, label:'G2'}, {x:12, label:'G3'}, {x:18, label:'Plan ends'}],
+    hlines:[{y:7, cls:'g-target', label:'7% target'}, {y:4, cls:'g-base', label:'4% today'}],
+    series:[{pts:pts, cls:'g-main'}],
+    dots:[{x:18, y:m18, cls:'g-dot', label:m18.toFixed(2) + '% at month 18', dy:-10}],
+    yTitle:'Run-rate operating margin'
+  });
+}
+
+function renderCashChart(r){
+  var inv = [], ret = [], vmax = 40, vmin = 0;
+  for (var m = 0; m <= 48; m++){ inv.push([m, r.cumSpend[m] || 0]); ret.push([m, r.cum[m] || 0]); vmax = Math.max(vmax, r.cum[m] || 0); vmin = Math.min(vmin, r.cum[m] || 0); }
+  var yMax = Math.ceil((vmax + 5)/10)*10, yMin = vmin < 0 ? Math.floor(vmin/10)*10 : 0;
+  var dots = [];
+  if (r.payback !== null && r.payback <= 48) dots.push({x:r.payback, y:r.cum[r.payback], cls:'g-dot-acc', label:'Payback, month ' + r.payback, dy:-10});
+  else dots.push({x:48, y:r.cum[48], cls:'g-dot-alt', label:'No payback by month 48', dy:14});
+  lineChart($('#cashChart'), {
+    h:240, xMax:48, yMin:yMin, yMax:yMax, yTicks:niceTicks(yMin, yMax, yMax - yMin > 80 ? 20 : 10), yFmt:function(v){ return '$' + v + 'M'; },
+    xTicks:[0,6,12,18,24,30,36,42,48], xFmt:function(v){ return 'M' + v; },
+    vlines:[{x:18, label:'Plan ends'}],
+    series:[{pts:inv, cls:'g-alt'}, {pts:ret, cls:'g-main'}],
+    dots:dots, yTitle:'Cumulative $M'
+  });
+}
+
+function renderGates(r){
+  var cl6 = r.at(6).cl, run12 = r.at(12).total;
+  var g2 = cl6 >= 2.0, g3 = run12 >= 5.0;
+  $('#gates').innerHTML =
+    '<div class="gate"><div class="gate-top"><h4>G1 · Month 3</h4><span class="pill info">Diagnostic</span></div><p>Reconcile cost pools (admin vs non-clinical), contract-labour role mix and agency hours, and payer × service × site contribution. Sizes the locked pipeline.</p></div>' +
+    '<div class="gate"><div class="gate-top"><h4>G2 · Month 6</h4><span class="pill ' + (g2 ? 'good">Release T2' : 'warn">Hold T2') + '</span></div><p>Release $13M, including AI scheduling, if contract-labour savings run at ≥$2.0M a year <span class="tag asm">Assumption</span> and the access pilot lifts the booking rate. Model: ' + money(cl6) + ' a year.</p></div>' +
+    '<div class="gate"><div class="gate-top"><h4>G3 · Month 12</h4><span class="pill ' + (g3 ? 'good">Metro eligible' : 'warn">Metro waits') + '</span></div><p>Consider a metro clinic only if recurring gains of ≥$5.0M a year can carry its fixed cost (up to $5M <span class="tag case">Case</span>). Model: ' + money(run12) + ' a year.</p></div>';
+}
+
+function renderLeverTable(r){
+  var e = r.e, d = S.delay;
+  var rows = [
+    ['Contract labour', 'Chief nursing officer, HR', e.cl, 3+d, 18+d, '<span class="pill warn">Medium–low</span>', 'Role mix, agency hours and rates by unit; hiring pipeline. Scenario: ' + money(S.cl_conv,0) + ' ÷ $195,125 ≈ ' + fmtInt(S.cl_conv*1e6/CASE.travel) + ' travel-nurse-equivalent roles, about ' + fmtInt(S.cl_conv*1e6/CASE.travel/15) + ' hires a month over 15 months.'],
+    ['Admin and support', 'CFO, patient access lead', e.adm, 6+d, 18+d, '<span class="pill info">Medium</span>', 'Process map of the $60M scheduling, referral, billing and coding work; overlap check against non-clinical spend.'],
+    ['Non-clinical', 'COO, supply chain', e.nc, 6+d, 18+d, '<span class="pill bad">Low</span>', 'Spend breakdown of the $180M; contract renewal dates.'],
+    ['Referral recovery', 'Patient access lead, specialty chairs', e.ref, 4+d, 18+d, '<span class="pill info">Medium</span>', 'Specialty split of the 90,000 referrals and capacity by specialty; pilot booking rate vs today’s 74%.'],
+    ['Running costs', 'CIO, CMIO', -e.run, 1, 10+d, '<span class="pill good">High</span>', 'AI scheduling $1.5M a year (case); scribe headcount and adoption.']
+  ];
+  var html = '<thead><tr><th>Lever</th><th>Owner</th><th class="num">Month-18 run-rate</th><th class="num">Starts</th><th class="num">Full effect</th><th>Confidence</th><th>Evidence that releases it</th></tr></thead><tbody>';
+  rows.forEach(function(x){ html += '<tr><td><b>' + x[0] + '</b></td><td>' + x[1] + '</td><td class="num">' + money(x[2]) + '</td><td class="num">M' + x[3] + '</td><td class="num">M' + x[4] + '</td><td>' + x[5] + '</td><td>' + x[6] + '</td></tr>'; });
+  html += '</tbody><tfoot><tr><td colspan="2">Net run-rate gain</td><td class="num">' + money(e.total) + '</td><td colspan="4"></td></tr></tfoot>';
+  $('#leverTable').innerHTML = html;
+}
+
+function renderArith(r){
+  var e = r.e, L = [];
+  L.push('Contract labour: ' + money(S.cl_conv,0) + ' × ' + S.cl_rate.toFixed(1) + '% = <b>' + money(r.CL, 2) + '</b> a year at full effect (month ' + (18 + S.delay) + ')');
+  L.push('Admin: $' + S.admin_pool + 'M × ' + S.admin_pct + '% = <b>' + money(r.ADM, 2) + '</b>');
+  L.push('Non-clinical: $180M × ' + S.nc_pct.toFixed(1) + '% = <b>' + money(r.NC, 2) + '</b>');
+  L.push('Referrals: 90,000 × ' + S.ref_pp.toFixed(1) + '% = ' + fmtInt(r.eps) + ' episodes × $' + fmtInt(S.ep_rev) + ' × ' + S.ep_cm + '% = <b>' + money(r.REFC, 2) + '</b> contribution on ' + money(r.REFREV, 2) + ' revenue');
+  L.push('Running costs at month 18: scribes ' + money(e.scr, 2) + ' + AI scheduling ' + money(e.ai, 2) + ' = <b>' + money(e.run, 2) + '</b>');
+  L.push('Month-18 operating income: $92M + ' + money(e.pos, 2) + ' − ' + money(e.run, 2) + ' = <b>' + money(r.OI18, 2) + '</b>; revenue $2,300M + ' + money(e.rev, 2) + ' = ' + money(r.R18, 2));
+  L.push('Exit margin: ' + money(r.OI18, 2) + ' ÷ ' + money(r.R18, 2) + ' = <b>' + pct(r.m18) + '</b>');
+  L.push('Target: 7% × ' + money(r.R18, 2) + ' = ' + money(r.targetOI, 2) + '; gap = ' + money(r.targetOI, 2) + ' − ' + money(r.OI18, 2) + ' = <b>' + money(Math.max(0, r.gap), 2) + '</b>');
+  L.push('Incremental operating income, months 1–18: sum of each month’s run-rate ÷ 12 = <b>' + money(r.cum18, 2) + '</b>');
+  L.push('Cash payback: first month where cumulative incremental operating income ≥ cumulative spend (T1 $12M m1–6, T2 $13M m7–12, T3 $10M m13–18) = <b>' + (r.payback === null ? 'not within 10 years' : 'month ' + r.payback + ' (' + (r.payback/12).toFixed(1) + ' years)') + '</b>');
+  L.push('Ramps: a lever starting at month s with full effect after L months contributes min(1, max(0, (m − s) ÷ L)) of its run-rate in month m. Labour s=' + (3+S.delay) + ', L=15; admin and non-clinical s=' + (6+S.delay) + ', L=12; referrals s=' + (4+S.delay) + ', L=14.');
+  $('#arith').innerHTML = L.map(function(x){ return '<div>' + x + '</div>'; }).join('');
+}
+
+/* =================================================================
+   FRONT DOOR PROTOTYPE (sample data)
+   ================================================================= */
+var SITES = {core:{name:'Core Orthopedic Clinic', short:'Core'}, sub:{name:'Suburban Orthopedic Clinic', short:'Suburban'}};
+var CLIN = [
+  {id:'hale', name:'Dr. R. Hale', role:'Orthopedic surgeon', sub:'Knee and sports', home:'core', plan:{1:'core',3:'core',5:'sub'}, np:false},
+  {id:'osei', name:'Dr. K. Osei', role:'Orthopedic surgeon', sub:'Hip and knee replacement', home:'core', plan:{1:'core',2:'core',4:'sub'}, np:false},
+  {id:'lind', name:'Dr. M. Lindqvist', role:'Orthopedic surgeon', sub:'Hand and upper limb', home:'core', plan:{2:'core',4:'sub'}, np:false},
+  {id:'baca', name:'Dr. J. Baca', role:'Orthopedic surgeon', sub:'Spine', home:'sub', plan:{2:'sub',3:'sub',5:'sub'}, np:false},
+  {id:'moss', name:'A. Moss, NP', role:'Nurse practitioner', sub:'Routine post-op follow-up', home:'core', plan:{1:'sub',3:'core',4:'core',5:'core'}, np:true}
+];
+var NEEDS = [
+  {id:'knee', label:'New knee problem', note:'Pain, injury, swelling', subs:['Knee and sports','Hip and knee replacement']},
+  {id:'hip', label:'New hip problem', note:'Pain, stiffness, arthritis', subs:['Hip and knee replacement']},
+  {id:'hand', label:'Hand, wrist or elbow', note:'Injury, numbness, pain', subs:['Hand and upper limb']},
+  {id:'spine', label:'Back or neck', note:'Pain, sciatica', subs:['Spine']},
+  {id:'postop', label:'Routine follow-up after surgery', note:'Week 6 or later, surgeon approved', subs:['Routine post-op follow-up']}
+];
+var ORIGINS = {central:{label:'Central Omaha', core:3, sub:14}, west:{label:'Western suburbs', core:13, sub:4}, rural:{label:'Outside the metro', core:41, sub:33}};
+var TIMES_SURG = ['8:30','9:15','10:00','10:45'], TIMES_NP = ['8:30','9:00','9:30','10:00','13:30','14:00'];
+var today = new Date(); today.setHours(0,0,0,0);
+function dayDate(d){ var x = new Date(today); x.setDate(x.getDate() + d); return x; }
+function fmtDate(d){ return dayDate(d).toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'}); }
+function nowTime(){ return new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}); }
+
+var SLOTS = [];
+(function genSlots(){
+  for (var d = 1; d <= 42; d++){
+    var wd = dayDate(d).getDay(); if (wd === 0 || wd === 6) continue;
+    CLIN.forEach(function(c, ci){
+      var site = c.plan[wd]; if (!site) return;
+      var times = c.np ? TIMES_NP : TIMES_SURG;
+      times.forEach(function(t, ti){
+        var h = (ci*37 + d*11 + ti*7) % 10, booked;
+        if (c.np) booked = d < 6 || h < 5;
+        else if (site === 'core') booked = d < 26 || h < 5;
+        else booked = d < 9 || h < 4;
+        SLOTS.push({id:c.id + '-' + d + '-' + ti, clin:c.id, site:site, d:d, time:t, booked:booked, by:booked ? (h % 2 ? 'phone' : 'online') : null, at:booked ? 'earlier' : null, who:null});
+      });
+    });
+  }
+})();
+function clinById(id){ for (var i = 0; i < CLIN.length; i++) if (CLIN[i].id === id) return CLIN[i]; return null; }
+function needById(id){ for (var i = 0; i < NEEDS.length; i++) if (NEEDS[i].id === id) return NEEDS[i]; return null; }
+
+function candidates(needId, origin){
+  var need = needById(needId), out = [];
+  CLIN.forEach(function(c){
+    if (need.subs.indexOf(c.sub) < 0) return;
+    var sites = {}; for (var k in c.plan) sites[c.plan[k]] = true;
+    Object.keys(sites).forEach(function(site){
+      var best = null;
+      SLOTS.forEach(function(s){ if (s.clin === c.id && s.site === site && !s.booked && (!best || s.d < best.d || (s.d === best.d && s.time < best.time))) best = s; });
+      if (best) out.push({slot:best, clin:c, site:site, dist:ORIGINS[origin][site], rotating:site !== c.home});
+    });
+  });
+  out.sort(function(a, b){ return a.slot.d - b.slot.d || a.dist - b.dist; });
+  return out;
+}
+function earliestAt(site, np){ var best = null; SLOTS.forEach(function(s){ var c = clinById(s.clin); if (s.site === site && !s.booked && c.np === !!np && (!best || s.d < best.d)) best = s; }); return best; }
+
+/* Door switching */
+var DOOR = 'patient';
+$$('.door').forEach(function(b){ b.addEventListener('click', function(){ setDoor(b.getAttribute('data-door')); }); });
+function setDoor(k){ DOOR = k; $$('.door').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-door') === k ? 'true' : 'false'); }); ['patient','doctor','staff'].forEach(function(x){ $('#door-' + x).hidden = x !== k; }); renderDoor(); }
+function renderDoor(){ if (DOOR === 'patient') renderPatient(); else if (DOOR === 'doctor') renderDoctor(); else renderStaff(); }
+function portalBar(right){ return '<div class="portal-bar"><span class="portal-brand">Bellwood <span>Health</span></span><span class="small muted">' + right + '</span></div>'; }
+
+/* ---- Patient door ---- */
+var P = {step:1, need:'knee', origin:'central', pick:null, phone:'', codeSent:false, codeOk:false, ins:'commercial', last:null};
+var LAST_ONLINE = null;
+var EST = {
+  medicare:'Sample: visit $180 · plan pays $144 · you pay about $36',
+  commercial:'Sample: visit $260 · plan pays $210 · you pay a $50 copay',
+  medicaid:'Sample: you pay $0–4 for this visit',
+  self:'Sample: self-pay price $195, shown before you book'
+};
+function renderPatient(){
+  var el = $('#door-patient'), html = portalBar('Book an appointment · no login needed');
+  html += '<div class="portal-body"><div class="stepper">' + ['What you need','Choose a time','Confirm'].map(function(s, i){ var n = i + 1; return '<span class="step ' + (P.step === n ? 'on' : (P.step > n ? 'done' : '')) + '">' + n + ' · ' + s + '</span>'; }).join('') + '</div>';
+  if (P.step === 1){
+    html += '<div><h3>What do you need?</h3><p class="small muted">Referred by your doctor? Use the same choice; your referral is matched when you confirm.</p></div><div class="choices" role="radiogroup" aria-label="Need">';
+    NEEDS.forEach(function(n){ html += '<label class="choice"><input type="radio" name="pneed" value="' + n.id + '"' + (P.need === n.id ? ' checked' : '') + '><span>' + esc(n.label) + '<small>' + esc(n.note) + '</small></span></label>'; });
+    html += '</div><label class="f" style="max-width:320px">Where are you starting from?<select id="porigin">';
+    Object.keys(ORIGINS).forEach(function(k){ html += '<option value="' + k + '"' + (P.origin === k ? ' selected' : '') + '>' + ORIGINS[k].label + '</option>'; });
+    html += '</select></label><div class="row"><button class="btn" type="button" id="pnext">Show times across all sites</button><span class="tiny">Distances are illustrative <span class="tag demo">Demo</span></span></div>';
+  } else if (P.step === 2){
+    var list = candidates(P.need, P.origin), need = needById(P.need);
+    var coreOnly = null; list.forEach(function(o){ if (o.site === 'core' && (!coreOnly || o.slot.d < coreOnly.slot.d)) coreOnly = o; });
+    html += '<div><h3>Times for: ' + esc(need.label.toLowerCase()) + '</h3><p class="small muted">Ordered by the scheduler: <b>right subspecialist</b>, then <b>earliest date</b>, then <b>distance</b>. You choose.</p></div>';
+    if (coreOnly && list.length && list[0].slot.d < coreOnly.slot.d) html += '<p class="callout info">Earliest at the Core clinic is in ' + coreOnly.slot.d + ' days. The same team can see you in ' + list[0].slot.d + ' days at the ' + SITES[list[0].site].short + ' clinic.</p>';
+    html += '<div class="optlist">';
+    list.slice(0, 5).forEach(function(o, i){
+      html += '<div class="optcard' + (i === 0 ? ' first' : '') + '"><div class="when"><b>in ' + o.slot.d + ' days</b><span>' + fmtDate(o.slot.d) + ' · ' + o.slot.time + '</span></div>' +
+        '<div class="who"><span class="name">' + esc(o.clin.name) + '</span><span class="small muted">' + esc(o.clin.role) + ' · ' + esc(SITES[o.site].name) + ' · ' + o.dist + ' mi</span><div class="badges">' +
+        (i === 0 ? '<span class="badge sug">Suggested</span>' : '') + '<span class="badge match">Matches: ' + esc(o.clin.sub) + '</span>' + (o.rotating ? '<span class="badge rot">Rotating session</span>' : '') + '</div></div>' +
+        '<button class="btn small' + (i === 0 ? '' : ' ghost') + '" type="button" data-pick="' + o.slot.id + '">Choose</button></div>';
+    });
+    if (!list.length) html += '<p class="callout">No open times in the next six weeks. A care coordinator calls you within 2 working days <span class="tag asm">Assumption</span>.</p>';
+    html += '</div><div class="row"><button class="btn ghost small" type="button" id="pback">Back</button></div>';
+  } else if (P.step === 3){
+    var s = P.pick, c = clinById(s.clin);
+    html += '<div><h3>Confirm your appointment</h3><p class="small muted">' + esc(c.name) + ' · ' + esc(SITES[s.site].name) + ' · ' + fmtDate(s.d) + ' at ' + s.time + '</p></div>';
+    html += '<div class="grid2"><label class="f">Mobile number<input type="tel" id="pphone" inputmode="tel" placeholder="(402) 555-0134" value="' + esc(P.phone) + '"></label>' +
+      '<label class="f">Insurance<select id="pins"><option value="commercial">Employer plan (commercial)</option><option value="medicare">Medicare</option><option value="medicaid">Medicaid</option><option value="self">Paying myself</option></select></label></div>';
+    if (!P.codeSent) html += '<div class="row"><button class="btn" type="button" id="psend">Text me a code</button><span class="tiny">One-time code instead of an account</span></div>';
+    else if (!P.codeOk) html += '<div class="row"><label class="f" style="max-width:180px">Code<input type="text" id="pcode" inputmode="numeric" placeholder="4 digits"></label><button class="btn" type="button" id="pverify" style="align-self:end">Verify</button><span class="tiny" style="align-self:end">Demo code: <b class="mono">4821</b></span></div>';
+    html += '<div class="estimate"><b>Your cost estimate</b><span id="pest">' + EST[P.ins] + '</span><span class="tiny">Sample figures for the prototype. In real use the insurance check runs at booking and shows your plan’s numbers <span class="tag demo">Demo</span>.</span></div>';
+    html += '<div class="row"><button class="btn" type="button" id="pconfirm"' + (P.codeOk ? '' : ' disabled') + '>Confirm booking</button><button class="btn ghost small" type="button" id="pback2">Choose another time</button></div>';
+  } else {
+    var b = P.last, cc = clinById(b.clin);
+    html += '<div class="confirm"><h3>Booked</h3><p>' + esc(cc.name) + ' · ' + esc(SITES[b.site].name) + ' · ' + fmtDate(b.d) + ' at ' + b.time + '</p>' +
+      '<p class="small">We text a reminder 7 days and 1 day before. Reply R to reschedule; the freed slot goes straight back to the shared schedule.</p>' +
+      '<p class="small">This slot is now gone from every channel, including the phone team’s screen.</p>' +
+      '<div class="row"><button class="btn small" type="button" id="pstaff">See it in the staff view</button><button class="btn ghost small" type="button" id="pagain">Book another</button></div></div>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+  bindPatient();
+}
+function bindPatient(){
+  var el = $('#door-patient');
+  $$('input[name=pneed]', el).forEach(function(i){ i.addEventListener('change', function(){ P.need = i.value; }); });
+  var o = $('#porigin', el); if (o) o.addEventListener('change', function(){ P.origin = o.value; });
+  var n = $('#pnext', el); if (n) n.addEventListener('click', function(){ P.step = 2; renderPatient(); });
+  $$('[data-pick]', el).forEach(function(b){ b.addEventListener('click', function(){ var id = b.getAttribute('data-pick'); P.pick = SLOTS.filter(function(s){ return s.id === id; })[0]; P.step = 3; P.codeSent = false; P.codeOk = false; renderPatient(); }); });
+  var bk = $('#pback', el); if (bk) bk.addEventListener('click', function(){ P.step = 1; renderPatient(); });
+  var bk2 = $('#pback2', el); if (bk2) bk2.addEventListener('click', function(){ P.step = 2; renderPatient(); });
+  var ins = $('#pins', el); if (ins){ ins.value = P.ins; ins.addEventListener('change', function(){ P.ins = ins.value; $('#pest').textContent = EST[P.ins]; }); }
+  var ph = $('#pphone', el); if (ph) ph.addEventListener('input', function(){ P.phone = ph.value; });
+  var sd = $('#psend', el); if (sd) sd.addEventListener('click', function(){ var digits = (P.phone || '').replace(/\D/g, ''); if (digits.length < 10){ toast('Enter a 10-digit mobile number to receive the code.'); return; } P.codeSent = true; renderPatient(); });
+  var vf = $('#pverify', el); if (vf) vf.addEventListener('click', function(){ var v = ($('#pcode', el).value || '').trim(); if (v === '4821'){ P.codeOk = true; renderPatient(); toast('Number verified.'); } else toast('That code does not match. The demo code is 4821.'); });
+  var cf = $('#pconfirm', el); if (cf) cf.addEventListener('click', function(){
+    if (P.pick.booked){ toast('Someone booked this time a moment ago. Pick another; the list is live.'); P.step = 2; renderPatient(); return; }
+    P.pick.booked = true; P.pick.by = 'online'; P.pick.at = nowTime(); P.pick.who = 'Online patient';
+    P.last = P.pick; LAST_ONLINE = P.pick; P.step = 4; renderPatient(); toast('Booked. The slot is gone from the phone team’s screen too.');
+  });
+  var st = $('#pstaff', el); if (st) st.addEventListener('click', function(){ setDoor('staff'); STAFF.signed = true; renderStaff(); });
+  var ag = $('#pagain', el); if (ag) ag.addEventListener('click', function(){ P.step = 1; renderPatient(); });
+}
+
+/* ---- Referrals (shared) ---- */
+var STATUS = ['Received','Triaged','Booked','Seen','Report sent'];
+var REFS = [
+  {id:'R-2041', pt:'M.K., 64', need:'knee', urg:'Routine', from:'Dr. S. Patel', practice:'Riverside Family Practice (independent)', owner:'J. Romero', status:4, age:19, booked:'Dr. R. Hale · Suburban', report:'Seen by Dr. Hale. MRI ordered; physiotherapy started; review in 6 weeks. Report sent to Dr. Patel.', type:'ref'},
+  {id:'R-2057', pt:'A.T., 52', need:'hand', urg:'Soon', from:'Dr. S. Patel', practice:'Riverside Family Practice (independent)', owner:'J. Romero', status:2, age:6, booked:'Dr. M. Lindqvist · Suburban · in 11 days', type:'ref'},
+  {id:'R-2063', pt:'D.F., 71', need:'hip', urg:'Routine', from:'Dr. S. Patel', practice:'Riverside Family Practice (independent)', owner:'K. Iyer', status:1, age:2, type:'ref'},
+  {id:'R-2066', pt:'L.R., 45', need:'spine', urg:'Routine', from:'Dr. L. Nguyen', practice:'Bellwood Primary Care, Elkhorn (internal)', owner:'K. Iyer', status:0, age:3, type:'ref'},
+  {id:'R-2070', pt:'J.P., 58', need:'knee', urg:'Routine', from:'Dr. S. Patel', practice:'Riverside Family Practice (independent)', owner:'Dr. R. Hale', status:0, age:1, type:'econsult', q:'58-year-old with knee pain for 4 months, X-ray shows moderate medial joint-space narrowing. Is a referral needed, or can I start a structured physiotherapy and weight programme first?'}
+];
+var nextRef = 2071;
+function progHTML(s){ var h = '<span class="prog" aria-label="' + STATUS[s] + '">'; for (var i = 0; i < 5; i++) h += '<i class="' + (i <= s ? 'on' : '') + (i === 4 ? ' last' : '') + '"></i>'; return h + '</span>'; }
+function overdue(r){ return r.type === 'ref' && r.status === 0 && r.age >= 2; }
+
+/* ---- Doctor door ---- */
+var DOC = {signed:false};
+function renderDoctor(){
+  var el = $('#door-doctor'), html = portalBar(DOC.signed ? 'Referring doctor portal · Dr. S. Patel, Riverside Family Practice' : 'Referring doctor portal');
+  html += '<div class="portal-body">';
+  if (!DOC.signed){
+    html += '<div class="login"><h3>Sign in</h3><label class="f">Username<input type="text" id="duser" value="spatel.riverside"></label><label class="f">Password<input type="text" id="dpass" value="••••••••"></label>' +
+      '<button class="btn" type="button" id="dsign">Sign in (demo)</button><p class="tiny">Outside doctors get a free account. Comparable referring-provider portals already exist in major EHRs.</p></div>';
+  } else {
+    html += '<div><h4 style="margin-bottom:8px">Bellwood referral follow-through today <span class="tag case">Case</span></h4><div class="funnel">' +
+      '<div class="fstep"><b>10,000</b><span>Referrals (sample, 60 days)</span></div><div class="fstep"><b>74%</b><span>Booked</span></div><div class="fstep"><b>65%</b><span>First visit attended</span></div><div class="fstep"><b>48%</b><span>Follow-up sent to you</span></div></div>' +
+      '<p class="tiny" style="margin-top:6px">Our commitment: every referral has a named owner until the report is back with you.</p></div>';
+    html += '<div class="cols"><div class="card" style="padding:14px"><h3>New referral</h3><form id="dform" class="stack" style="gap:10px;margin-top:8px">' +
+      '<div class="grid2"><label class="f">Patient (initials, age)<input type="text" id="dpt" placeholder="e.g. R.S., 49"></label><label class="f">Urgency<select id="durg"><option>Routine</option><option>Soon</option><option>Urgent</option></select></label></div>' +
+      '<label class="f">Specialty<select id="dneed">' + NEEDS.filter(function(n){ return n.id !== 'postop'; }).map(function(n){ return '<option value="' + n.id + '">Orthopedics · ' + esc(n.label) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="f">Reason<textarea id="dwhy" placeholder="Short clinical question"></textarea></label>' +
+      '<label class="check"><input type="checkbox" id="decon"><span>Ask a specialist first (eConsult). You get advice, usually within days, and book only if a visit is needed.</span></label>' +
+      '<div class="row"><button class="btn" type="submit">Send</button></div></form></div>';
+    html += '<div class="card" style="padding:14px"><h3>My referrals</h3><div class="tbl-wrap"><table class="tbl" style="margin-top:6px"><thead><tr><th>Ref</th><th>Patient</th><th>Status</th><th>Owner</th></tr></thead><tbody>';
+    REFS.filter(function(r){ return r.from === 'Dr. S. Patel'; }).slice().reverse().forEach(function(r){
+      var st = r.type === 'econsult' ? (r.status === 0 ? '<span class="pill info">eConsult sent</span>' : '<span class="pill good">Specialist replied</span>') : progHTML(r.status) + ' <span class="small">' + STATUS[r.status] + '</span>';
+      html += '<tr><td class="mono">' + r.id + '</td><td>' + esc(r.pt) + '<br><span class="tiny">' + esc(needById(r.need).label) + '</span></td><td>' + st + (r.booked && r.status === 2 ? '<br><span class="tiny">' + esc(r.booked) + '</span>' : '') + '</td><td>' + esc(r.owner) + '</td></tr>';
+      if (r.status === 4 && r.report) html += '<tr><td></td><td colspan="3" class="small muted">Report: ' + esc(r.report) + '</td></tr>';
+      if (r.type === 'econsult' && r.answer) html += '<tr><td></td><td colspan="3" class="small muted">Answer: ' + esc(r.answer) + '</td></tr>';
+    });
+    html += '</tbody></table></div></div></div>';
+    html += '<div class="card" style="padding:14px"><h3>How eConsult works</h3><div class="qa" style="margin-top:8px"><div class="q"><b>You ask:</b> ' + esc(REFS[4].q) + '</div><div class="a"><b>Specialist replies:</b> ' + esc(REFS[4].answer || 'Waiting for Dr. Hale. Target reply within 2 working days.') + '</div></div>' +
+      '<p class="tiny" style="margin-top:8px">In an Ontario eConsult service, 40% of eConsults avoided a planned referral, the median specialist reply took 2 days, and 92% of doctors rated it valuable <span class="tag src">Source</span> (Liddy et al., JABFM 2019; Canadian data).</p></div>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+  var sg = $('#dsign', el); if (sg) sg.addEventListener('click', function(){ DOC.signed = true; renderDoctor(); });
+  var fm = $('#dform', el); if (fm) fm.addEventListener('submit', function(e){
+    e.preventDefault();
+    var pt = ($('#dpt', el).value || '').trim() || 'New patient';
+    var econ = $('#decon', el).checked;
+    var r = {id:'R-' + (nextRef++), pt:pt, need:$('#dneed', el).value, urg:$('#durg', el).value, from:'Dr. S. Patel', practice:'Riverside Family Practice (independent)', owner:econ ? 'Dr. R. Hale' : 'J. Romero', status:0, age:0, type:econ ? 'econsult' : 'ref', q:($('#dwhy', el).value || '').trim()};
+    REFS.push(r); renderDoctor();
+    toast(econ ? r.id + ' sent to a specialist. Target reply within 2 working days.' : r.id + ' received. Owner: J. Romero. We contact your patient within 2 working days.');
+  });
+}
+
+/* ---- Staff door ---- */
+var STAFF = {signed:false, need:'knee', origin:'central', caller:'', test:null};
+function renderStaff(){
+  var el = $('#door-staff'), html = portalBar(STAFF.signed ? 'Central access team · J. Romero' : 'Staff sign-in');
+  html += '<div class="portal-body">';
+  if (!STAFF.signed){
+    html += '<div class="login"><h3>Sign in</h3><label class="f">Username<input type="text" value="jromero.access"></label><label class="f">Password<input type="text" value="••••••••"></label><button class="btn" type="button" id="ssign">Sign in (demo)</button></div>';
+    html += '</div>'; el.innerHTML = html; $('#ssign', el).addEventListener('click', function(){ STAFF.signed = true; renderStaff(); }); return;
+  }
+  // Earliest
+  var ec = earliestAt('core', false), es = earliestAt('sub', false);
+  html += '<div><h3>One schedule across both orthopedic clinics</h3><p class="small muted">Open new-patient slots / total, by week. Phone, online and referral bookings all write here.</p></div>';
+  html += '<div class="funnel" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">' +
+    '<div class="fstep"><b>' + (ec ? ec.d + ' days' : '—') + '</b><span>Earliest new-patient slot, Core</span></div>' +
+    '<div class="fstep"><b>' + (es ? es.d + ' days' : '—') + '</b><span>Earliest new-patient slot, Suburban</span></div>' +
+    '<div class="fstep"><b>94% · 28 d</b><span>Core FY25 utilisation · median wait <span class="tag case">Case</span></span></div>' +
+    '<div class="fstep"><b>70% · 11 d</b><span>Suburban FY25 · median wait <span class="tag case">Case</span></span></div></div>';
+  html += '<div class="tbl-wrap"><table class="tbl sched"><thead><tr><th>Clinician · site</th>';
+  for (var w = 1; w <= 6; w++) html += '<th>Wk ' + w + '</th>';
+  html += '</tr></thead><tbody>';
+  CLIN.forEach(function(c){
+    var sites = {}; for (var k in c.plan) sites[c.plan[k]] = true;
+    Object.keys(sites).forEach(function(site){
+      html += '<tr><td><b>' + esc(c.name) + '</b> · ' + SITES[site].short + (site !== c.home ? ' <span class="badge rot">Rotating</span>' : '') + '<br><span class="tiny">' + esc(c.sub) + '</span></td>';
+      for (var w2 = 1; w2 <= 6; w2++){
+        var tot = 0, open = 0;
+        SLOTS.forEach(function(s){ if (s.clin === c.id && s.site === site && Math.ceil(s.d/7) === w2){ tot++; if (!s.booked) open++; } });
+        var share = tot ? (tot - open)/tot : 0;
+        html += '<td class="cell" style="background:' + (tot ? 'color-mix(in srgb, var(--data) ' + Math.round(share*55) + '%, transparent)' : 'transparent') + '">' + (tot ? open + '/' + tot : '·') + '</td>';
+      }
+      html += '</tr>';
+    });
+  });
+  html += '</tbody></table></div><p class="tiny">Darker = fuller. Sample schedule <span class="tag demo">Demo</span>.</p>';
+
+  // Phone booking + double booking test
+  html += '<div class="cols"><div class="card" style="padding:14px"><h3>Take a phone booking</h3><div class="stack" style="gap:10px;margin-top:8px">' +
+    '<div class="grid2"><label class="f">Caller<input type="text" id="scaller" placeholder="Name" value="' + esc(STAFF.caller) + '"></label><label class="f">Calling from<select id="sorigin">' +
+    Object.keys(ORIGINS).map(function(k){ return '<option value="' + k + '"' + (STAFF.origin === k ? ' selected' : '') + '>' + ORIGINS[k].label + '</option>'; }).join('') + '</select></label></div>' +
+    '<label class="f">Need<select id="sneed">' + NEEDS.map(function(n){ return '<option value="' + n.id + '"' + (STAFF.need === n.id ? ' selected' : '') + '>' + esc(n.label) + '</option>'; }).join('') + '</select></label><div class="optlist">';
+  candidates(STAFF.need, STAFF.origin).slice(0, 3).forEach(function(o, i){
+    html += '<div class="optcard' + (i === 0 ? ' first' : '') + '" style="grid-template-columns:96px minmax(0,1fr) auto"><div class="when"><b style="font-size:18px">in ' + o.slot.d + ' d</b><span>' + fmtDate(o.slot.d) + ' ' + o.slot.time + '</span></div><div class="who"><span class="name">' + esc(o.clin.name) + '</span><span class="tiny">' + SITES[o.site].short + ' · ' + o.dist + ' mi' + (o.rotating ? ' · rotating session' : '') + '</span></div><button class="btn small' + (i ? ' ghost' : '') + '" type="button" data-sbook="' + o.slot.id + '">Book</button></div>';
+  });
+  html += '</div></div></div>';
+  html += '<div class="card" style="padding:14px"><h3>Double-booking test</h3><p class="small muted" style="margin:6px 0 10px">Try to give a caller a slot that a patient just booked online. With one schedule, the system refuses.</p>' +
+    '<button class="btn danger" type="button" id="stest">Try to book a slot taken online</button><div id="stestout">' + (STAFF.test || '') + '</div></div></div>';
+
+  // Work queue
+  html += '<div class="card" style="padding:14px"><h3>Referral work queue</h3><p class="small muted">Every referral has a named owner until the report is back with the referring doctor. Overdue = no patient contact after 2 working days <span class="tag asm">Assumption</span>.</p><div class="tbl-wrap"><table class="tbl" style="margin-top:6px"><thead><tr><th>Ref</th><th>From</th><th>Patient · need</th><th>Status</th><th>Owner</th><th>Next step</th></tr></thead><tbody>';
+  REFS.forEach(function(r, i){
+    var st, act = '';
+    if (r.type === 'econsult'){
+      st = r.status === 0 ? '<span class="pill info">eConsult waiting</span>' : '<span class="pill good">Answered</span>';
+      if (r.status === 0) act = '<button class="btn small" type="button" data-act="' + i + '">Specialist replies</button>';
+    } else {
+      st = progHTML(r.status) + ' <span class="small">' + STATUS[r.status] + '</span>' + (overdue(r) ? ' <span class="pill bad">Overdue</span>' : '');
+      var labels = ['Triage', 'Offer earliest slot', 'Mark seen (demo)', 'Send report to referrer'];
+      if (r.status < 4) act = '<button class="btn small" type="button" data-act="' + i + '">' + labels[r.status] + '</button>';
+      else act = '<span class="tiny">Closed loop</span>';
+    }
+    html += '<tr><td class="mono">' + r.id + '</td><td>' + esc(r.from) + '<br><span class="tiny">' + esc(r.practice) + '</span></td><td>' + esc(r.pt) + '<br><span class="tiny">' + esc(needById(r.need).label) + ' · ' + esc(r.urg) + '</span></td><td>' + st + (r.booked && r.status >= 2 ? '<br><span class="tiny">' + esc(r.booked) + '</span>' : '') + '</td><td>' + esc(r.owner) + '</td><td>' + act + '</td></tr>';
+  });
+  html += '</tbody></table></div></div>';
+
+  // Guardrails
+  html += '<div class="card" style="padding:14px"><h3>What the scheduling assistant may and may not do</h3><div class="guard"><div><h4>May</h4><ul><li>Order options by subspecialty, earliest date, then distance</li><li>Flag referrals with no contact after 2 working days</li><li>Draft reminder and rebooking texts</li><li>Offer freed slots to the waiting list</li></ul></div>' +
+    '<div><h4>May not</h4><ul><li>Decide clinical urgency (clinicians triage)</li><li>Change a clinician’s session template</li><li>Cancel or move a booking without a person</li><li>Send patients outside Bellwood for follow-up</li></ul></div></div>' +
+    '<p class="tiny" style="margin-top:10px">Aligned with Joint Commission and Coalition for Health AI guidance (Sept 2025): governance, patient transparency, data security, quality monitoring, safety-event reporting, bias checks and training <span class="tag src">Source</span>.</p></div>';
+  html += '</div>';
+  el.innerHTML = html;
+
+  $('#scaller', el).addEventListener('input', function(e){ STAFF.caller = e.target.value; });
+  $('#sorigin', el).addEventListener('change', function(e){ STAFF.origin = e.target.value; renderStaff(); });
+  $('#sneed', el).addEventListener('change', function(e){ STAFF.need = e.target.value; renderStaff(); });
+  $$('[data-sbook]', el).forEach(function(b){ b.addEventListener('click', function(){
+    var s = SLOTS.filter(function(x){ return x.id === b.getAttribute('data-sbook'); })[0];
+    if (s.booked){ toast('Already booked. Refreshing the options.'); renderStaff(); return; }
+    s.booked = true; s.by = 'phone'; s.at = nowTime(); s.who = STAFF.caller || 'Phone caller';
+    toast('Booked by phone for ' + s.who + ': ' + fmtDate(s.d) + ' ' + s.time + '. Hidden from online booking now.'); renderStaff();
+  }); });
+  $('#stest', el).addEventListener('click', function(){
+    var s = LAST_ONLINE || SLOTS.filter(function(x){ return x.booked && x.by === 'online' && x.d >= 9; })[0];
+    var c = clinById(s.clin);
+    STAFF.test = '<p class="callout bad" style="margin-top:10px"><b>Blocked.</b> ' + esc(c.name) + ', ' + SITES[s.site].short + ', ' + fmtDate(s.d) + ' ' + s.time + ' was booked online' + (s.at && s.at !== 'earlier' ? ' at ' + s.at : '') + '. Phone and online read the same schedule, so the slot cannot be given twice.</p>' +
+      (LAST_ONLINE ? '' : '<p class="tiny">Tip: book a slot in the patient door first, then run this test on that exact slot.</p>');
+    $('#stestout', el).innerHTML = STAFF.test;
+  });
+  $$('[data-act]', el).forEach(function(b){ b.addEventListener('click', function(){
+    var r = REFS[+b.getAttribute('data-act')];
+    if (r.type === 'econsult'){ r.status = 1; r.answer = 'Start 12 weeks of structured physiotherapy and weight management; refer if no improvement or if locking or instability develops. No visit needed now.'; toast(r.id + ': specialist reply sent to ' + r.from + '.'); }
+    else if (r.status === 1){
+      var o = candidates(r.need, 'central')[0];
+      if (o){ o.slot.booked = true; o.slot.by = 'referral'; o.slot.at = nowTime(); o.slot.who = r.pt; r.booked = o.clin.name + ' · ' + SITES[o.site].short + ' · ' + fmtDate(o.slot.d) + ' ' + o.slot.time; }
+      r.status = 2; toast(r.id + ' booked: ' + (r.booked || 'slot pending') + '. Referrer sees it at once.');
+    } else { r.status = Math.min(4, r.status + 1); if (r.status === 4 && !r.report) r.report = 'Visit summary and plan sent automatically from the EHR after the first visit.'; toast(r.id + ': ' + STATUS[r.status] + '.'); }
+    renderStaff();
+  }); });
+}
+
+/* =================================================================
+   CAPACITY
+   ================================================================= */
+var C = {moved:1000, steer:1000, deleg:10, fshare:67};
+var CAPCTL = [
+  {id:'moved', label:'Surgeon clinic time moved Suburban → Core', min:0, max:6000, step:250, fmt:function(v){ return fmtInt(v) + ' slots'; }, hint:'<span class="tag asm">Assumption</span> Rotating sessions; the same surgeons work at both sites'},
+  {id:'steer', label:'Visits steered Core → Suburban', min:0, max:5000, step:250, fmt:function(v){ return fmtInt(v) + ' visits'; }, hint:'<span class="tag asm">Assumption</span> Patients offered the earlier slot, with transport support'},
+  {id:'deleg', label:'Core follow-ups moved to NP/PA clinics', min:0, max:30, step:1, fmt:function(v){ return v + '%'; }, hint:'<span class="tag asm">Assumption</span> Later routine visits only, at the surgeon’s discretion'},
+  {id:'fshare', label:'Follow-ups as a share of visits', min:50, max:80, step:1, fmt:function(v){ return v + '%'; }, hint:'<span class="tag case">Case</span> ~3 slots per episode implies about 2 in 3'}
+];
+function buildCap(){
+  var f = $('#capControls'), html = '<fieldset><legend>Capacity levers</legend>';
+  CAPCTL.forEach(function(c){ html += '<div class="ctl"><div class="ctl-top"><label for="c_' + c.id + '">' + esc(c.label) + '</label><output id="c_' + c.id + '_out"></output></div><input type="range" id="c_' + c.id + '" min="' + c.min + '" max="' + c.max + '" step="' + c.step + '"><p class="hint">' + c.hint + '</p></div>'; });
+  html += '</fieldset><div class="row" style="margin-bottom:12px"><button class="btn ghost small" type="button" id="cToday">Today</button><button class="btn ghost small" type="button" id="cPlan">Our plan</button></div>';
+  f.innerHTML = html;
+  f.addEventListener('input', function(e){ var t = e.target; if (t.type === 'range'){ C[t.id.replace('c_','')] = +t.value; renderCapacity(); } });
+  f.addEventListener('submit', function(e){ e.preventDefault(); });
+  $('#cToday').addEventListener('click', function(){ C = {moved:0, steer:0, deleg:0, fshare:C.fshare}; renderCapacity(); });
+  $('#cPlan').addEventListener('click', function(){ C = {moved:1000, steer:1000, deleg:10, fshare:67}; renderCapacity(); });
+}
+function waitFn(u){ return 8.025 + 1.275 * u/(1 - u); }
+function waitTxt(u){ return u >= 0.985 ? '60+ days' : waitFn(u).toFixed(1) + ' days'; }
+function renderCapacity(){
+  if ($('#tab-capacity').hidden) return;
+  CAPCTL.forEach(function(c){ $('#c_' + c.id).value = C[c.id]; $('#c_' + c.id + '_out').textContent = c.fmt(C[c.id]); });
+  var coreVisits = 18800 - C.steer, D = C.deleg/100 * C.fshare/100 * coreVisits;
+  var coreSlots = 20000 + C.moved, subSlots = 20000 - C.moved;
+  var coreU = (coreVisits - D)/coreSlots, subU = (14000 + C.steer)/subSlots;
+  var comb = (32800 - D)/40000;
+  function clinicCard(name, nowU, newU, nowWait, slots, visits){
+    var over = newU > 1;
+    return '<div class="clinic"><h3>' + name + '</h3>' +
+      '<div class="gauge-row"><span class="tiny">Today</span><div class="gauge"><span class="fill now" style="width:' + (nowU*100).toFixed(1) + '%"></span><span class="tmark" style="left:80%"></span></div><span class="mono small">' + pct(nowU, 0) + '</span></div>' +
+      '<div class="gauge-row"><span class="tiny">After</span><div class="gauge"><span class="fill" style="width:' + Math.min(100, newU*100).toFixed(1) + '%;background:' + (over ? 'var(--bad)' : 'var(--accent)') + '"></span><span class="tmark" style="left:80%"></span></div><span class="mono small">' + pct(newU, 0) + '</span></div>' +
+      '<p class="small muted">' + fmtInt(visits) + ' surgeon visits in ' + fmtInt(slots) + ' slots. Median wait today ' + nowWait + ' days <span class="tag case">Case</span>; illustrative after: <b>' + (over ? 'over capacity' : waitTxt(newU)) + '</b>.</p></div>';
+  }
+  $('#clinics').innerHTML = clinicCard('Core clinic', 0.94, coreU, 28, coreSlots, coreVisits - D) + clinicCard('Suburban clinic', 0.70, subU, 11, subSlots, 14000 + C.steer) +
+    '<p class="tiny" style="grid-column:1/-1">Bronze tick = 80% operating objective <span class="tag asm">Assumption</span>.</p>';
+  var balanced = Math.abs(coreU - subU) <= 0.05;
+  $('#capKpis').innerHTML =
+    '<div class="kpi"><span class="k-label">Combined surgeon-slot use</span><span class="k-val">' + pct(comb, 1) + '</span><span class="k-sub">82.0% today <span class="tag case">Case</span></span></div>' +
+    '<div class="kpi"><span class="k-label">Surgeon slots freed at Core</span><span class="k-val">' + fmtInt(D) + '</span><span class="k-sub">Follow-ups moved to NP/PA clinics</span></div>' +
+    '<div class="kpi"><span class="k-label">NP/PA visits needed</span><span class="k-val">' + fmtInt(D) + '</span><span class="k-sub">Added capacity; not free</span></div>' +
+    '<div class="kpi"><span class="k-label">Balance</span><span class="k-val" style="font-size:22px">' + (subU > 1 || coreU > 1 ? 'Over capacity' : (balanced ? 'Balanced' : (coreU > subU ? 'Core hotter' : 'Suburban hotter'))) + '</span><span class="k-sub">Core ' + pct(coreU, 0) + ' vs Suburban ' + pct(subU, 0) + '</span></div>';
+  // wait chart
+  var pts = []; for (var u = 0.5; u <= 0.9751; u += 0.005) pts.push([u, Math.min(60, waitFn(u))]);
+  var dots = [{x:0.94, y:28, cls:'g-dot-grey', label:'Core today 28 d', dy:-10}, {x:0.70, y:11, cls:'g-dot-grey', label:'Suburban today 11 d', dy:20}];
+  if (coreU < 0.975 && coreU >= 0.5) dots.push({x:coreU, y:Math.min(60, waitFn(coreU)), cls:'g-dot-acc', label:'Core after', dy:-12});
+  if (subU < 0.975 && subU >= 0.5) dots.push({x:subU, y:Math.min(60, waitFn(subU)), cls:'g-dot-acc', label:'Suburban after', dy:22});
+  lineChart($('#waitChart'), {
+    h:260, xMin:0.5, xMax:1.0, yMin:0, yMax:60, yTicks:[0,10,20,30,40,50,60], yFmt:function(v){ return v + ' d'; },
+    xTicks:[0.5,0.6,0.7,0.8,0.9,1.0], xFmt:function(v){ return Math.round(v*100) + '%'; },
+    bands:[{y1:12, y2:14, cls:'g-band', label:'12–14 days'}],
+    series:[{pts:pts, cls:'g-main'}], dots:dots, yTitle:'Illustrative wait (days)'
+  });
+}
+
+/* ---------------- Init ---------------- */
+buildControls(); syncControls(); buildCap();
+renderPatient(); renderDoctor(); renderStaff();
+showTab((location.hash || '#model').replace('#',''));
+var rt = null;
+window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ renderModel(); renderCapacity(); }, 150); });
+})();
+</script>
+
+</body>
+</html>
